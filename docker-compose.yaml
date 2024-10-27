@@ -1,0 +1,41 @@
+services:
+  api:
+    build:
+      dockerfile: Dockerfile
+      context: .
+      # Only will build development stage from our dockerfile
+      target: development
+    volumes:
+      - .:/usr/src/app
+    env_file:
+      - .env
+    # Run a command against the development stage of the image
+    command: npm run start:dev
+    ports:
+      - '3000:3000'
+    depends_on:
+        - database
+
+  api-prod:
+    image: arsb29/bull:latest
+    volumes:
+      - .:/usr/src/app
+      - /etc/letsencrypt/live/bullcoin.ru/fullchain.pem:/etc/letsencrypt/live/bullcoin.ru/fullchain.pem
+      - /etc/letsencrypt/live/bullcoin.ru/privkey.pem:/etc/letsencrypt/live/bullcoin.ru/privkey.pem
+    env_file:
+      - .env
+    ports:
+      - '3000:3000'
+    depends_on:
+      - database
+
+  database:
+    image: mongo:8.0
+    container_name: mongodb
+    restart: always
+    command:
+      - --auth
+    ports:
+      - '27017:27017'
+    volumes:
+      - './data:/data/db'
