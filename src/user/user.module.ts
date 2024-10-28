@@ -13,9 +13,8 @@ import {BotModule} from "../bot/bot.module";
     }]),
     BotModule
   ],
-  providers: [
-    UserService
-  ],
+  providers: [UserService],
+  exports: [UserService],
   controllers: [UserController]
 })
 

@@ -8,7 +8,7 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @Get()
-  async getUser(@Req() request: Request, @Headers() headers: Headers) {
+  async getUser(@Headers() headers: Headers) {
     return this.userService.getUser({userFromHeader: getUserFromHeaders(headers)});
   }
 }

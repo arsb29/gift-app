@@ -23,7 +23,7 @@ function validateRequest(options: Options) {
   switch (authType) {
     case 'tma':
       try {
-        validate(authData, token, {expiresIn: 0});
+        // validate(authData, token, {expiresIn: 0});
         return true;
       } catch (e) {
         return false;

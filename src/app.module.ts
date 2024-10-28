@@ -4,6 +4,8 @@ import {ConfigModule, ConfigService} from "@nestjs/config";
 import { AppController } from './app.controller';
 import {UserModule} from "./user/user.module";
 import {BotModule} from "./bot/bot.module";
+import {GiftModule} from "./gift/gift.module";
+import {TransactionModule} from "./transaction/transaction.module";
 
 @Module({
   imports: [
@@ -19,7 +21,9 @@ import {BotModule} from "./bot/bot.module";
       },
       inject: [ConfigService]
     }),
+    TransactionModule,
     UserModule,
+    GiftModule,
     BotModule
   ],
   controllers: [
