@@ -22,7 +22,7 @@ export class UserService {
     const newUser = new this.userModel({
       telegramId,
       photoUrl,
-      giftsReceived: null,
+      giftsReceived: 0,
       isPremium,
       firstName,
       rank: null,
@@ -37,6 +37,13 @@ export class UserService {
     const user = await this.userModel.findOne({telegramId: userFromHeader.id});
     if (!user) return this.createUser({userFromHeader});
     return user;
+  }
+
+  async addPurchasedGift({user}: { user: User }) {
+    return this.userModel.findOneAndUpdate(
+      {_id: user},
+      {'$inc': {giftsReceived: 1}}
+    );
   }
 
   async updateUsersOrder(): Promise<void> {

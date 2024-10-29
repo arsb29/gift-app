@@ -1,5 +1,4 @@
 import {IsEnum, IsNotEmpty, IsString, IsMongoId} from "class-validator";
-import {Schema as MongooseSchema} from "mongoose";
 import {GiftId} from "../types";
 import {GIFT_ID} from "../constants";
 
@@ -13,5 +12,11 @@ export class TransactionBuyDto {
 export class TransactionCheckDto {
   @IsNotEmpty()
   @IsMongoId()
-  transactionId: MongooseSchema.Types.ObjectId;
+  transactionId: string;
+}
+
+export class TransactionReceiveDto {
+  @IsNotEmpty()
+  @IsMongoId()
+  transactionId: string;
 }

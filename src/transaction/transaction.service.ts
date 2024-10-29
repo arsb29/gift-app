@@ -63,4 +63,20 @@ export class TransactionService {
     await this.giftService.addPurchasedGift({gift: transaction.gift});
     return this.getTransactionById({id: transaction['_id']});
   }
+
+  async receiveGift({userFromHeader, transactionId}: { userFromHeader: UserType, transactionId: string }) {
+    const receiver = await this.userService.getUser({userFromHeader});
+    const transaction = await this.getTransactionById({id: transactionId});
+    if (!transaction) throw new HttpException('Transaction not found', 404);
+    const receiverId = receiver['_id'].toString();
+    const transactionReceiverId = transaction.receiver?.['_id']?.toString();
+    const transactionSenderId = transaction.sender['_id'].toString();
+    if (transactionReceiverId && (transactionReceiverId !== receiverId)) throw new HttpException('The gift has already been received', 404);
+    if (transactionSenderId !== receiverId) throw new HttpException("Can't send a gift to yourself", 404);
+    if (transactionReceiverId === receiverId) return transaction;
+    await transaction.updateOne({'$set': {receiver: receiver['_id']}});
+    await this.userService.addPurchasedGift({user: receiver});
+    this.userService.updateUsersOrder();
+    return this.getTransactionById({id: transaction['_id']});
+  }
 }
