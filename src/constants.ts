@@ -5,8 +5,9 @@ export const GIFT_ID = {
 } as const;
 
 export const TRANSACTION_STATUS = {
-  'transactionCreated': 'transactionCreated',
-  'invoiceCreated': 'invoiceCreated',
+  transactionCreated: 'transactionCreated',
+  invoiceCreated: 'invoiceCreated',
+  invoicePaid: 'invoicePaid',
 } as const;
 
 export const CRYPTO_ASSET = {

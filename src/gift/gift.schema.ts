@@ -13,6 +13,9 @@ export class Gift {
   numberOfPurchased: number;
 
   @Prop({unique: false, required: false})
+  numberOfBooked: number;
+
+  @Prop({unique: false, required: false})
   totalNumberOf: number;
 
   @Prop({unique: false, required: false})

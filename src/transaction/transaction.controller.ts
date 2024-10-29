@@ -1,7 +1,7 @@
 import {Body, Controller, Headers, Post} from "@nestjs/common";
 import {TransactionService} from "./transaction.service";
 import {getUserFromHeaders} from "../utils/getUserTelegramId";
-import {TransactionBuyDto} from "./transaction.dto";
+import {TransactionBuyDto, TransactionCheckDto} from "./transaction.dto";
 
 @Controller('api/transaction')
 export class TransactionController {
@@ -14,6 +14,13 @@ export class TransactionController {
     return this.transactionService.buyGift({
       giftId: body.giftId,
       userFromHeader: getUserFromHeaders(headers)
+    });
+  }
+
+  @Post('check')
+  async checkPaidInvoice(@Headers() headers: Headers, @Body() body: TransactionCheckDto) {
+    return this.transactionService.checkingThePurchasedGift({
+      transactionId: body.transactionId
     });
   }
 }

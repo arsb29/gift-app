@@ -2,14 +2,12 @@ import {Model} from "mongoose";
 import {Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {User} from "./user.schema";
-import {BotService} from "../bot/bot.service";
 import {User as UserType} from "@telegram-apps/init-data-node";
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<User>,
-    private readonly botService: BotService
+    @InjectModel(User.name) private userModel: Model<User>
   ) {}
 
   createUser({userFromHeader}: { userFromHeader: UserType }) {
@@ -39,5 +37,16 @@ export class UserService {
     const user = await this.userModel.findOne({telegramId: userFromHeader.id});
     if (!user) return this.createUser({userFromHeader});
     return user;
+  }
+
+  async updateUsersOrder(): Promise<void> {
+    const users = await this.userModel.find().sort({ giftsReceived: -1 }).exec();
+    const bulkOps = users.map((user, index) => ({
+      updateOne: {
+        filter: { _id: user._id },
+        update: { $set: { rank: index + 1 } },
+      }
+    }));
+    await this.userModel.bulkWrite(bulkOps);
   }
 }
