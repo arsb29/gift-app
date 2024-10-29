@@ -1,5 +1,5 @@
 import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
-import {Types, Schema as MongooseSchema} from "mongoose";
+import {Schema as MongooseSchema} from "mongoose";
 import {User} from "../user/user.schema";
 import {Gift} from "../gift/gift.schema";
 import {TransactionStatus} from "../types";
@@ -26,6 +26,9 @@ export class Transaction {
 
   @Prop({unique: false, required: false})
   miniAppPayUrl: string;
+
+  @Prop({unique: false, required: false})
+  expiresIn: number;
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);

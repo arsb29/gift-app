@@ -7,6 +7,7 @@ import {UserService} from "../user/user.service";
 import {GiftService} from "../gift/gift.service";
 import {TRANSACTION_STATUS} from "../constants";
 import {CryptoBotService} from "../cryptoBot/cryptoBot.service";
+import {toMilliseconds} from "../utils/time";
 
 @Injectable()
 export class TransactionService {
@@ -27,6 +28,7 @@ export class TransactionService {
       serialNumberOfGift: null,
       status: TRANSACTION_STATUS.transactionCreated,
       invoiceId: null,
+      expiresIn: Date.now() + toMilliseconds({hours: 24})
     });
   }
 
@@ -78,5 +80,31 @@ export class TransactionService {
     await this.userService.addPurchasedGift({user: receiver});
     this.userService.updateUsersOrder();
     return this.getTransactionById({id: transaction['_id']});
+  }
+
+  async deleteExpiredTransactions() {
+    const now = Date.now();
+    return await this.transactionModel.deleteMany({expiresIn: {$lt: now}}).exec();
+  }
+
+  async getGroupedBookedGifts() {
+    const currentStatuses = [TRANSACTION_STATUS.transactionCreated, TRANSACTION_STATUS.invoiceCreated];
+    const listOfBookedGifts= await this.transactionModel.aggregate([
+      {
+        $match: {
+          status: { $in: currentStatuses }, // Фильтрация по актуальным статусам
+        },
+      },
+      {
+        $group: {
+          _id: '$gift', // Группировка по id подарка
+          numberOfBooked: { $sum: 1 }, // Сохранение всех транзакций в списке
+        },
+      },
+    ]);
+    return listOfBookedGifts.reduce((result, current) => {
+      result[current['_id'].toString()] = current.numberOfBooked;
+      return result
+    }, {});
   }
 }

@@ -8,6 +8,7 @@ import {TransactionController} from "./transaction.controller";
 import {Gift, GiftSchema} from "../gift/gift.schema";
 import {User, UserSchema} from "../user/user.schema";
 import {CryptoBotModule} from "../cryptoBot/cryptoBot.module";
+import {TransactionCron} from "./transaction.cron";
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import {CryptoBotModule} from "../cryptoBot/cryptoBot.module";
     CryptoBotModule
   ],
   exports: [TransactionService],
-  providers: [TransactionService],
+  providers: [TransactionService, TransactionCron],
   controllers: [TransactionController]
 })
 

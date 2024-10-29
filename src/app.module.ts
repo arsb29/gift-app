@@ -6,6 +6,7 @@ import {UserModule} from "./user/user.module";
 import {BotModule} from "./bot/bot.module";
 import {GiftModule} from "./gift/gift.module";
 import {TransactionModule} from "./transaction/transaction.module";
+import {ScheduleModule} from "@nestjs/schedule";
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import {TransactionModule} from "./transaction/transaction.module";
     TransactionModule,
     UserModule,
     GiftModule,
-    BotModule
+    BotModule,
+    ScheduleModule.forRoot()
   ],
   controllers: [
     AppController

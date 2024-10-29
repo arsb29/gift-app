@@ -30,4 +30,15 @@ export class GiftService {
       {'$inc': {numberOfBooked: 1}}
     );
   }
+
+  async updateBookedGifts({bookedGifts}): Promise<void> {
+    const gifts = await this.getAllGifts();
+    const bulkOps = gifts.map((gift) => ({
+      updateOne: {
+        filter: {_id: gift['_id']},
+        update: {$set: {numberOfBooked: bookedGifts[gift['_id'].toString()] || 0}},
+      }
+    }));
+    await this.giftModel.bulkWrite(bulkOps);
+  }
 }
