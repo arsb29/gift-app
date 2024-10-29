@@ -32,6 +32,10 @@ export class TransactionService {
     });
   }
 
+  async getTransactionById({id}) {
+    return this.transactionModel.findOne({_id: id});
+  }
+
   async getCountOfUnpaidTransactionsOfGift({gift}) {
     const countOfUnpaidTransactionsOfGift = await this.transactionModel.countDocuments({
       gift: gift['_id'],
@@ -64,6 +68,6 @@ export class TransactionService {
       miniAppPayUrl: invoice.miniAppPayUrl,
       status: TRANSACTION_STATUS.invoiceCreated
     }});
-    return this.transactionModel.find();
+    return this.getTransactionById({id: transaction['_id']});
   }
 }
