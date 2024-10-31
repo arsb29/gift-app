@@ -20,6 +20,7 @@ services:
     image: arsb29/bull:latest
     volumes:
       - .:/usr/src/app
+      - ./assets:/usr/src/app/assets
       - /etc/letsencrypt/live/bullcoin.ru/fullchain.pem:/etc/letsencrypt/live/bullcoin.ru/fullchain.pem
       - /etc/letsencrypt/live/bullcoin.ru/privkey.pem:/etc/letsencrypt/live/bullcoin.ru/privkey.pem
     env_file:
