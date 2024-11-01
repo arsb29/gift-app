@@ -31,7 +31,7 @@ export class TransactionService {
       serialNumberOfGift: null,
       status: TRANSACTION_STATUS.transactionCreated,
       invoiceId: null,
-      expiresIn: Date.now() + toMilliseconds({hours: 24})
+      expiresIn: Date.now() + toMilliseconds({hours: 25})
     });
   }
 
@@ -39,7 +39,7 @@ export class TransactionService {
     return this.transactionModel.findOne({_id: id});
   }
 
-  async buyGift({userFromHeader, giftId}: { userFromHeader: UserType, giftId: string }) {
+  async createInvoice({userFromHeader, giftId}: { userFromHeader: UserType, giftId: string }) {
     const sender = await this.userService.getUser({userFromHeader});
     const gift = await this.giftService.getGiftByGiftId({giftId});
     if (!gift) throw new HttpException('Gift not found', 404);
@@ -53,7 +53,6 @@ export class TransactionService {
       status: TRANSACTION_STATUS.invoiceCreated
     }});
     await this.giftService.addBookedGift({gift});
-    await this.actionsService.recordActions({gift, sender, transaction, type: ACTION_TYPE.buy, receiver: null})
     return this.getTransactionById({id: transaction['_id']});
   }
 
@@ -67,7 +66,8 @@ export class TransactionService {
       status: TRANSACTION_STATUS.invoicePaid
     }});
     await this.giftService.addPurchasedGift({gift: transaction.gift});
-    return this.getTransactionById({id: transaction['_id']});
+    await this.actionsService.recordActions({gift: transaction.gift, sender: transaction.sender, transaction, type: ACTION_TYPE.buy, receiver: null})
+    return this.getTransactionById({id: transaction});
   }
 
   async receiveGift({userFromHeader, transactionId}: { userFromHeader: UserType, transactionId: string }) {

@@ -11,7 +11,7 @@ export class TransactionController {
 
   @Post('buy')
   async buyGift(@Headers() headers: Headers, @Body() body: TransactionBuyDto) {
-    return this.transactionService.buyGift({
+    return this.transactionService.createInvoice({
       giftId: body.giftId,
       userFromHeader: getUserFromHeaders(headers)
     });

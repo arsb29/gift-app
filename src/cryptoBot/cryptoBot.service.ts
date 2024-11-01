@@ -1,5 +1,6 @@
 import {Injectable} from "@nestjs/common";
 import {ConfigService} from "@nestjs/config";
+import {toMilliseconds} from "../utils/time";
 const CryptoBotAPI = require('crypto-bot-api');
 
 @Injectable()
@@ -19,7 +20,7 @@ export class CryptoBotService {
       description: 'description', // todo надо добавить юзеру настройки и брать оттуда ru или en
       paidBtnUrl: `${this.configService.get('TELEGRAM_MINI_APP_URL')}?startapp=giftPurchased-${transaction['_id']}`, // todo почему не работает
       paidBtnName: 'viewItem',
-      expiresIn: 172800 // todo 2 дня в секундах
+      expiresIn: Math.floor(toMilliseconds({hours: 24}) / 60)
     });
   }
 
