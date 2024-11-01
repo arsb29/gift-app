@@ -20,11 +20,20 @@ export class ActionsService {
     });
   }
 
-  async getActions({gift, user}) {
+  async getActions({gift, user, limit, page}) {
+    const skip = (page - 1) * limit;
     const filters = [];
     if (gift) filters.push({gift: gift});
     if (user) filters.push({sender: user}, {receiver: user});
-    return this.actionsModel.find({$or : filters})
+    const events = await this.actionsModel.find({$or : filters})
+      .sort({ time: -1 })
+      .skip(skip)
+      .limit(limit)
       .populate(['gift', 'receiver', 'sender', 'transaction'])
+    return {
+      events,
+      currentPage: page,
+      hasMore: events.length > limit,
+    };
   }
 }

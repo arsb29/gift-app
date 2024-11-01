@@ -1,4 +1,4 @@
-import {IsMongoId, IsOptional} from "class-validator";
+import {IsMongoId, IsNotEmpty, IsNumber, IsOptional} from "class-validator";
 
 export class ActionsDto {
   @IsOptional()
@@ -8,4 +8,12 @@ export class ActionsDto {
   @IsOptional()
   @IsMongoId()
   user: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  page: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  limit: number;
 }

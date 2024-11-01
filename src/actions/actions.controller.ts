@@ -12,7 +12,9 @@ export class ActionsController {
   async buyGift(@Body() body: ActionsDto) {
     return this.actionsService.getActions({
       gift: body.gift,
-      user: body.user
+      user: body.user,
+      page: body.page,
+      limit: body.limit
     });
   }
 }
