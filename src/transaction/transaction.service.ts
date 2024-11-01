@@ -5,9 +5,10 @@ import {Transaction} from "./transaction.schema";
 import {User as UserType} from "@telegram-apps/init-data-node";
 import {UserService} from "../user/user.service";
 import {GiftService} from "../gift/gift.service";
-import {TRANSACTION_STATUS} from "../constants";
+import {ACTION_TYPE, TRANSACTION_STATUS} from "../constants";
 import {CryptoBotService} from "../cryptoBot/cryptoBot.service";
 import {toMilliseconds} from "../utils/time";
+import {ActionsService} from "../actions/actions.service";
 
 @Injectable()
 export class TransactionService {
@@ -17,6 +18,8 @@ export class TransactionService {
     private userService: UserService,
     @Inject(forwardRef(() => GiftService))
     private giftService: GiftService,
+    @Inject(forwardRef(() => ActionsService))
+    private actionsService: ActionsService,
     private cryptoBotService: CryptoBotService
   ) {}
 
@@ -50,6 +53,7 @@ export class TransactionService {
       status: TRANSACTION_STATUS.invoiceCreated
     }});
     await this.giftService.addBookedGift({gift});
+    await this.actionsService.recordActions({gift, sender, transaction, type: ACTION_TYPE.buy, receiver: null})
     return this.getTransactionById({id: transaction['_id']});
   }
 
@@ -79,6 +83,7 @@ export class TransactionService {
     await transaction.updateOne({'$set': {receiver: receiver['_id']}});
     await this.userService.addPurchasedGift({user: receiver});
     this.userService.updateUsersOrder();
+    await this.actionsService.recordActions({gift: transaction.gift?.['_id'], receiver, transaction, type: ACTION_TYPE.receive, sender: null})
     return this.getTransactionById({id: transaction['_id']});
   }
 

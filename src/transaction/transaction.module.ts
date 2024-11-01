@@ -9,6 +9,7 @@ import {Gift, GiftSchema} from "../gift/gift.schema";
 import {User, UserSchema} from "../user/user.schema";
 import {CryptoBotModule} from "../cryptoBot/cryptoBot.module";
 import {TransactionCron} from "./transaction.cron";
+import {ActionsModule} from "../actions/actions.module";
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import {TransactionCron} from "./transaction.cron";
     ]),
     forwardRef(() => UserModule),
     forwardRef(() => GiftModule),
+    forwardRef(() => ActionsModule),
     CryptoBotModule
   ],
   exports: [TransactionService],

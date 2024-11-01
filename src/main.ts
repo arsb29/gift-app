@@ -19,6 +19,13 @@ async function bootstrap() {
   }
   const app = await NestFactory.create(AppModule, {httpsOptions});
   const configService = app.get(ConfigService);
+  app.enableCors({
+    origin: [
+      'https://localhost:5173',
+      'https://172.16.231.237:5173',
+      'https://192.168.1.137:5173'
+    ],
+  });
   app.useGlobalGuards(new AuthGuard(configService));
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(3000);

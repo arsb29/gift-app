@@ -21,3 +21,9 @@ export const CRYPTO_ASSET = {
   USDC: 'USDC',
   JET: 'JET'
 } as const;
+
+export const ACTION_TYPE = {
+  buy: 'buy',
+  send: 'send',
+  receive: 'receive',
+} as const;

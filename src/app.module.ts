@@ -7,6 +7,7 @@ import {BotModule} from "./bot/bot.module";
 import {GiftModule} from "./gift/gift.module";
 import {TransactionModule} from "./transaction/transaction.module";
 import {ScheduleModule} from "@nestjs/schedule";
+import {ActionsModule} from "./actions/actions.module";
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import {ScheduleModule} from "@nestjs/schedule";
     UserModule,
     GiftModule,
     BotModule,
+    ActionsModule,
     ScheduleModule.forRoot()
   ],
   controllers: [
