@@ -8,7 +8,7 @@ export class GiftController {
   ) {}
 
   @Get()
-  async getUser() {
+  async getAllGifts() {
     return this.giftService.getAllGifts();
   }
 }

@@ -1,4 +1,4 @@
-import {Body, Controller, Headers, Post} from "@nestjs/common";
+import {Body, Controller, Get, Headers, Post} from "@nestjs/common";
 import {TransactionService} from "./transaction.service";
 import {getUserFromHeaders} from "../utils/getUserTelegramId";
 import {TransactionBuyDto, TransactionCheckDto, TransactionReceiveDto} from "./transaction.dto";
@@ -29,6 +29,13 @@ export class TransactionController {
     return this.transactionService.receiveGift({
       transactionId: body.transactionId,
       userFromHeader: getUserFromHeaders(headers)
+    });
+  }
+
+  @Get('needToSend')
+  async getGiftsNeedToSend(@Headers() headers: Headers) {
+    return this.transactionService.getGiftsNeedToSend({
+      userFromTelegram: getUserFromHeaders(headers)
     });
   }
 }

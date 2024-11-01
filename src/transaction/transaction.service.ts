@@ -112,4 +112,9 @@ export class TransactionService {
       return result
     }, {});
   }
+
+  async getGiftsNeedToSend({userFromTelegram}) {
+    const user = await this.userService.getUser({userFromHeader: userFromTelegram});
+    return this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.invoicePaid}).populate('gift');
+  }
 }
