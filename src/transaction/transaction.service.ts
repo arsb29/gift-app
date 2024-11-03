@@ -1,4 +1,4 @@
-import {Model} from "mongoose";
+import {Model, Types} from "mongoose";
 import {forwardRef, HttpException, Inject, Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {Transaction} from "./transaction.schema";
@@ -39,9 +39,9 @@ export class TransactionService {
     return this.transactionModel.findOne({_id: id});
   }
 
-  async createInvoice({userFromHeader, giftId}: { userFromHeader: UserType, giftId: string }) {
+  async createInvoice({userFromHeader, _id}: { userFromHeader: UserType, _id: Types.ObjectId }) {
     const sender = await this.userService.getUser({userFromHeader});
-    const gift = await this.giftService.getGiftByGiftId({giftId});
+    const gift = await this.giftService.getGiftById({_id});
     if (!gift) throw new HttpException('Gift not found', 404);
     const countOfRemainingGifts = gift['totalNumberOf'] - gift['numberOfBooked'] - gift['numberOfPurchased'];
     if (countOfRemainingGifts <= 0) throw new HttpException('The gifts are sold out', 404);

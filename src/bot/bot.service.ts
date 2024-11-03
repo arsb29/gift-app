@@ -6,13 +6,15 @@ import * as fs from "node:fs";
 import {TransactionService} from "../transaction/transaction.service";
 import {mapUserFromInlineQuery} from "../utils/mapUserFromInlineQuery";
 import {mapTransactionsToAnswerInlineQuery} from "../utils/mapTransactionsToAnswerInlineQuery";
+import {UserService} from "../user/user.service";
 
 @Injectable()
 export class BotService implements OnModuleInit {
   public bot: any;
   constructor(
     private readonly configService: ConfigService,
-    private transactionService: TransactionService
+    private transactionService: TransactionService,
+    private userService: UserService
   ) {
     this.bot = new TelegramBot(this.configService.get('TELEGRAM_BOT_TOKEN'), { polling: true });
   }
@@ -23,7 +25,7 @@ export class BotService implements OnModuleInit {
   }
 
   initializeBotHandlers() {
-    this.bot.onText(/\/start/, (msg) => {
+    this.bot.onText(/\/start/, async (msg) => {
       const chatId = msg.chat.id;
       const caption = `🎁 Here you can buy and end gifts to your friends.`;
       const options = {
@@ -52,6 +54,14 @@ export class BotService implements OnModuleInit {
         cache_time: 0
       });
     });
+  }
+
+  async saveUserPhoto({telegramId}) {
+    const photoId = await this.bot.getUserProfilePhotos(telegramId, {limit: 1}).then(res => res.photos[0][0].file_id)
+    const fileLink = await this.bot.getFileLink(photoId)
+    const response = await fetch(fileLink);
+    const photo = await response.arrayBuffer();
+    return this.userService.updateUserPhoto({photo, telegramId: telegramId})
   }
 
   idFile() {

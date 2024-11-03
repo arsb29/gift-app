@@ -56,4 +56,8 @@ export class UserService {
     }));
     await this.userModel.bulkWrite(bulkOps);
   }
+
+  async updateUserPhoto({telegramId, photo}): Promise<void> {
+    return this.userModel.findOneAndUpdate({telegramId, photo: JSON.stringify(photo)});
+  }
 }

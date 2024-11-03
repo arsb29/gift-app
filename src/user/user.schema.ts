@@ -1,4 +1,5 @@
 import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
+import {Types} from "mongoose";
 
 @Schema()
 export class User {
@@ -28,6 +29,9 @@ export class User {
 
   @Prop({unique: false, required: false})
   registerTime: number;
+
+  @Prop({unique: false, required: false})
+  photo: Types.Buffer;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

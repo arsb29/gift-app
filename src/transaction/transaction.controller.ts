@@ -9,10 +9,10 @@ export class TransactionController {
     private readonly transactionService: TransactionService
   ) {}
 
-  @Post('buy')
+  @Post('createInvoice')
   async buyGift(@Headers() headers: Headers, @Body() body: TransactionBuyDto) {
     return this.transactionService.createInvoice({
-      giftId: body.giftId,
+      _id: body._id,
       userFromHeader: getUserFromHeaders(headers)
     });
   }

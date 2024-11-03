@@ -1,12 +1,11 @@
-import {IsEnum, IsNotEmpty, IsString, IsMongoId} from "class-validator";
-import {GiftId} from "../types";
-import {GIFT_ID} from "../constants";
+import {IsNotEmpty, IsString, IsMongoId} from "class-validator";
+import {Types} from "mongoose";
 
 export class TransactionBuyDto {
   @IsNotEmpty()
   @IsString()
-  @IsEnum(GIFT_ID)
-  giftId: GiftId;
+  @IsMongoId()
+  _id: Types.ObjectId;
 }
 
 export class TransactionCheckDto {

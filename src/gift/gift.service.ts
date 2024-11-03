@@ -1,4 +1,4 @@
-import {Model} from "mongoose";
+import {Model, Types} from "mongoose";
 import {Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {Gift} from "./gift.schema";
@@ -15,6 +15,10 @@ export class GiftService {
 
   async getGiftByGiftId({giftId}: {giftId: string}) {
     return this.giftModel.findOne({giftId: giftId});
+  }
+
+  async getGiftById({_id}: {_id: Types.ObjectId}) {
+    return this.giftModel.findOne({_id: _id});
   }
 
   async addPurchasedGift({gift}: { gift: Gift }) {
