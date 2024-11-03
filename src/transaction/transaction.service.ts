@@ -39,6 +39,10 @@ export class TransactionService {
     return this.transactionModel.findOne({_id: id});
   }
 
+  async getPopulatedTransactionById({id}) {
+    return this.transactionModel.findOne({_id: id}).populate(['gift', 'sender', 'receiver']);
+  }
+
   async createInvoice({userFromHeader, _id}: { userFromHeader: UserType, _id: Types.ObjectId }) {
     const sender = await this.userService.getUser({userFromHeader});
     const gift = await this.giftService.getGiftById({_id});
@@ -57,7 +61,7 @@ export class TransactionService {
   }
 
   async checkingThePurchasedGift({transactionId}) {
-    const transaction = await this.getTransactionById({id: transactionId});
+    const transaction = await this.getPopulatedTransactionById({id: transactionId});
     if (!transaction) throw new HttpException('Transaction not found', 404);
     if (transaction.status === TRANSACTION_STATUS.invoicePaid) return transaction;
     const isPaid = this.cryptoBotService.checkIsPaidInvoiceForGift({invoiceId: transaction.invoiceId});
@@ -67,7 +71,7 @@ export class TransactionService {
     }});
     await this.giftService.addPurchasedGift({gift: transaction.gift});
     await this.actionsService.recordActions({gift: transaction.gift, sender: transaction.sender, transaction, type: ACTION_TYPE.buy, receiver: null})
-    return this.getTransactionById({id: transaction});
+    return this.getPopulatedTransactionById({id: transaction});
   }
 
   async receiveGift({userFromHeader, transactionId}: { userFromHeader: UserType, transactionId: string }) {
