@@ -1,7 +1,7 @@
-import {Controller, Get, Headers, Body, Post} from "@nestjs/common";
+import {Controller, Get, Body, Post, Param, Headers} from "@nestjs/common";
 import {UserService} from "./user.service";
-import {getUserFromHeaders} from "../utils/getUserTelegramId";
 import {LeaderboardDto} from "./user.dto";
+import {getUserFromHeaders} from "../utils/getUserTelegramId";
 
 @Controller('api/user')
 export class UserController {
@@ -10,6 +10,11 @@ export class UserController {
   @Get()
   async getUser(@Headers() headers: Headers) {
     return this.userService.getUser({userFromHeader: getUserFromHeaders(headers)});
+  }
+
+  @Get(':telegramId')
+  async getUserByTelegramId(@Param('id') telegramId: string) {
+    return this.userService.getUserByTelegramId({telegramId});
   }
 
   @Post('leaderboard')
