@@ -57,8 +57,8 @@ export class UserService {
     await this.userModel.bulkWrite(bulkOps);
   }
 
-  async updateUserPhoto({telegramId, photo}): Promise<void> {
-    return this.userModel.findOneAndUpdate({telegramId, photo: JSON.stringify(photo)});
+  async updateUserPhoto({telegramId, imageId}): Promise<void> {
+    return this.userModel.findOneAndUpdate({telegramId, imageId});
   }
 
   async getLeaderboard({limit, page}) {

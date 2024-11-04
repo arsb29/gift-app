@@ -1,12 +1,13 @@
 import {Injectable, OnModuleInit} from "@nestjs/common";
 const TelegramBot = require('node-telegram-bot-api');
-
+const fetch = require('node-fetch');
 import {ConfigService} from "@nestjs/config";
 import * as fs from "node:fs";
 import {TransactionService} from "../transaction/transaction.service";
 import {mapUserFromInlineQuery} from "../utils/mapUserFromInlineQuery";
 import {mapTransactionsToAnswerInlineQuery} from "../utils/mapTransactionsToAnswerInlineQuery";
 import {UserService} from "../user/user.service";
+import {ImageService} from "../image/image.service";
 
 @Injectable()
 export class BotService implements OnModuleInit {
@@ -14,7 +15,8 @@ export class BotService implements OnModuleInit {
   constructor(
     private readonly configService: ConfigService,
     private transactionService: TransactionService,
-    private userService: UserService
+    private userService: UserService,
+    private imageService: ImageService
   ) {
     this.bot = new TelegramBot(this.configService.get('TELEGRAM_BOT_TOKEN'), { polling: true });
   }
@@ -27,6 +29,7 @@ export class BotService implements OnModuleInit {
   initializeBotHandlers() {
     this.bot.onText(/\/start/, async (msg) => {
       const chatId = msg.chat.id;
+      await this.saveUserPhoto({telegramId: chatId});
       const caption = `🎁 Here you can buy and end gifts to your friends.`;
       const options = {
         caption,
@@ -61,9 +64,9 @@ export class BotService implements OnModuleInit {
   async saveUserPhoto({telegramId}) {
     const photoId = await this.bot.getUserProfilePhotos(telegramId, {limit: 1}).then(res => res.photos[0][0].file_id)
     const fileLink = await this.bot.getFileLink(photoId)
-    const response = await fetch(fileLink);
-    const photo = await response.arrayBuffer();
-    return this.userService.updateUserPhoto({photo, telegramId: telegramId})
+    const photoBase64 = await toDataURL_node(fileLink);
+    const image = await this.imageService.saveImage({photoBase64});
+    await this.userService.updateUserPhoto({telegramId: telegramId, imageId: image['_id']});
   }
 
   idFile() {
@@ -76,4 +79,11 @@ export class BotService implements OnModuleInit {
       }
     });
   }
+}
+
+async function toDataURL_node(url: string) {
+  let response = await fetch(url);
+  let contentType = response.headers.get("Content-Type");
+  let buffer = await response.buffer();
+  return "data:" + contentType + ';base64,' + buffer.toString('base64');
 }
