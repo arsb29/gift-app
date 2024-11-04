@@ -48,11 +48,13 @@ export class BotService implements OnModuleInit {
 
   initializeInlineMode() {
     this.bot.on('inline_query', async (query) => {
-      const transactions = await this.transactionService.getGiftsNeedToSend({userFromTelegram: mapUserFromInlineQuery(query)})
-      const results = mapTransactionsToAnswerInlineQuery({transactions, url: this.configService.get('TELEGRAM_MINI_APP_DIRECT_URL')});
-      this.bot.answerInlineQuery(query.id, results, {
-        cache_time: 0
+      const transactions = await this.transactionService.getGiftsNeedToSend({userFromTelegram: mapUserFromInlineQuery(query)});
+      const transactionsFiltred = transactions.filter(({gift}) => gift.giftId.startsWith(query.query));
+      const results = mapTransactionsToAnswerInlineQuery({
+        transactions: transactionsFiltred,
+        url: this.configService.get('TELEGRAM_MINI_APP_URL')
       });
+      this.bot.answerInlineQuery(query.id, results, {cache_time: 0});
     });
   }
 

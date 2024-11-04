@@ -15,7 +15,7 @@ export function mapTransactionsToAnswerInlineQuery({transactions, url}: {transac
         [
           {
             text: 'Receive Gift',
-            web_app: { url },
+            url,
           },
         ],
       ],
