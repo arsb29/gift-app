@@ -2,6 +2,7 @@ import {Model} from "mongoose";
 import {Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {Actions} from "./actions.schema";
+import {ACTION_TYPE} from "../constants";
 
 @Injectable()
 export class ActionsService {
@@ -20,20 +21,34 @@ export class ActionsService {
     });
   }
 
-  async getActions({gift, user, limit, page}) {
+  async getGiftActions({gift, limit, page}) {
     const skip = (page - 1) * limit;
-    const filters = [];
-    if (gift) filters.push({gift: gift});
-    if (user) filters.push({sender: user}, {receiver: user});
-    const events = await this.actionsModel.find({$or : filters})
+    const actions = await this.actionsModel.find({
+      gift: gift,
+      $or: [{type: ACTION_TYPE.send}, {type: ACTION_TYPE.buy}]
+    })
       .sort({ time: -1 })
       .skip(skip)
       .limit(limit)
       .populate(['gift', 'receiver', 'sender', 'transaction'])
     return {
-      events,
+      actions,
       currentPage: page,
-      hasMore: events.length > limit,
+      hasMore: actions.length > limit,
+    };
+  }
+
+  async getUserActions({user, limit, page}) {
+    const skip = (page - 1) * limit;
+    const actions = await this.actionsModel.find({$or : [{sender: user}, {receiver: user}]})
+      .sort({ time: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate(['gift', 'receiver', 'sender', 'transaction'])
+    return {
+      actions,
+      currentPage: page,
+      hasMore: actions.length > limit,
     };
   }
 }
