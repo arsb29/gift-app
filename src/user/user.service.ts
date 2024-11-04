@@ -60,4 +60,17 @@ export class UserService {
   async updateUserPhoto({telegramId, photo}): Promise<void> {
     return this.userModel.findOneAndUpdate({telegramId, photo: JSON.stringify(photo)});
   }
+
+  async getLeaderboard({limit, page}) {
+    const skip = (page - 1) * limit;
+    const users = await this.userModel.find()
+      .sort({ rank: -1 })
+      .skip(skip)
+      .limit(limit);
+    return {
+      users,
+      currentPage: page,
+      hasMore: users.length > limit,
+    };
+  }
 }
