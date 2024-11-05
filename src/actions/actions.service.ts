@@ -51,4 +51,18 @@ export class ActionsService {
       hasMore: actions.length > limit,
     };
   }
+
+  async getUserReceiveActions({user, limit, page}) {
+    const skip = (page - 1) * limit;
+    const actions = await this.actionsModel.find({receiver: user})
+      .sort({ time: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate(['gift', 'receiver', 'sender', 'transaction'])
+    return {
+      actions,
+      currentPage: page,
+      hasMore: actions.length > limit,
+    };
+  }
 }

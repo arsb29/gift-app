@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Post} from "@nestjs/common";
+import {Body, Controller, Post} from "@nestjs/common";
 import {ActionsService} from "./actions.service";
 import {GiftActionsDto, UserActionsDto} from "./actions.dto";
 
@@ -20,6 +20,15 @@ export class ActionsController {
   @Post('user')
   async getUserActions(@Body() body: UserActionsDto) {
     return this.actionsService.getUserActions({
+      user: body.user,
+      page: body.page,
+      limit: body.limit
+    });
+  }
+
+  @Post('user/receive')
+  async getUserReceiveActions(@Body() body: UserActionsDto) {
+    return this.actionsService.getUserReceiveActions({
       user: body.user,
       page: body.page,
       limit: body.limit
