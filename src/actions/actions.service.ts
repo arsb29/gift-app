@@ -27,7 +27,7 @@ export class ActionsService {
 
   async getGiftActions({gift, limit, page}) {
     const skip = (page - 1) * limit;
-    const actions = await this.actionsModel.find({
+    const items = await this.actionsModel.find({
       gift: gift,
       $or: [{type: ACTION_TYPE.send}, {type: ACTION_TYPE.buy}]
     })
@@ -36,37 +36,37 @@ export class ActionsService {
       .limit(limit)
       .populate(['gift', 'receiver', 'sender', 'transaction'])
     return {
-      actions,
+      items,
       currentPage: page,
-      hasMore: actions.length > limit,
+      hasMore: items.length > limit,
     };
   }
 
   async getUserActions({user, limit, page}) {
     const skip = (page - 1) * limit;
-    const actions = await this.actionsModel.find({$or : [{sender: user}, {receiver: user}]})
+    const items = await this.actionsModel.find({$or : [{sender: user}, {receiver: user}]})
       .sort({ time: -1 })
       .skip(skip)
       .limit(limit)
       .populate(['gift', 'receiver', 'sender', 'transaction'])
     return {
-      actions,
+      items,
       currentPage: page,
-      hasMore: actions.length > limit,
+      hasMore: items.length > limit,
     };
   }
 
   async getUserReceiveActions({user, limit, page}) {
     const skip = (page - 1) * limit;
-    const actions = await this.actionsModel.find({receiver: user, type: ACTION_TYPE.receive})
+    const items = await this.actionsModel.find({receiver: user, type: ACTION_TYPE.receive})
       .sort({ time: -1 })
       .skip(skip)
       .limit(limit)
       .populate(['gift', 'receiver', 'sender', 'transaction'])
     return {
-      actions,
+      items,
       currentPage: page,
-      hasMore: actions.length > limit,
+      hasMore: items.length > limit,
     };
   }
 }

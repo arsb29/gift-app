@@ -67,14 +67,14 @@ export class UserService {
 
   async getLeaderboard({limit, page}) {
     const skip = (page - 1) * limit;
-    const users = await this.userModel.find()
+    const items = await this.userModel.find()
       .sort({ rank: 1 })
       .skip(skip)
       .limit(limit);
     return {
-      users,
+      items,
       currentPage: page,
-      hasMore: users.length > limit,
+      hasMore: items.length > limit,
     };
   }
 }

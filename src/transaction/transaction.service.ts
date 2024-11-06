@@ -66,10 +66,11 @@ export class TransactionService {
     if (transaction.status === TRANSACTION_STATUS.invoicePaid) return transaction;
     const isPaid = this.cryptoBotService.checkIsPaidInvoiceForGift({invoiceId: transaction.invoiceId});
     if (!isPaid) throw new HttpException('Invoice not paid', 404);
+    const gift = await this.giftService.addPurchasedGift({gift: transaction.gift});
     await transaction.updateOne({'$set': {
-      status: TRANSACTION_STATUS.invoicePaid
+      status: TRANSACTION_STATUS.invoicePaid,
+      serialNumberOfGift: gift.numberOfPurchased
     }});
-    await this.giftService.addPurchasedGift({gift: transaction.gift});
     await this.actionsService.recordActions({gift: transaction.gift, sender: transaction.sender, transaction, type: ACTION_TYPE.buy, receiver: null})
     return this.getPopulatedTransactionById({id: transaction});
   }
