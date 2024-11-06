@@ -21,6 +21,10 @@ export class ActionsService {
     });
   }
 
+  async updateReceiverOnAction({transaction, receiver}: any) {
+    return this.actionsModel.findOneAndUpdate({transaction, type: ACTION_TYPE.send}, {$set: {receiver}});
+  }
+
   async getGiftActions({gift, limit, page}) {
     const skip = (page - 1) * limit;
     const actions = await this.actionsModel.find({
@@ -54,7 +58,7 @@ export class ActionsService {
 
   async getUserReceiveActions({user, limit, page}) {
     const skip = (page - 1) * limit;
-    const actions = await this.actionsModel.find({receiver: user})
+    const actions = await this.actionsModel.find({receiver: user, type: ACTION_TYPE.receive})
       .sort({ time: -1 })
       .skip(skip)
       .limit(limit)

@@ -8,6 +8,8 @@ export const TRANSACTION_STATUS = {
   transactionCreated: 'transactionCreated',
   invoiceCreated: 'invoiceCreated',
   invoicePaid: 'invoicePaid',
+  sendGift: 'sendGift',
+  receiveGift: 'receiveGift'
 } as const;
 
 export const CRYPTO_ASSET = {

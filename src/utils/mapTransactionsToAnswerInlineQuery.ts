@@ -1,9 +1,14 @@
 import {Transaction} from "../transaction/transaction.schema";
 
-export function mapTransactionsToAnswerInlineQuery({transactions, url}: {transactions: Transaction[], url: string}) {
-  return transactions.map((transaction, index) => ({
+export function mapTransactionsToAnswerInlineQuery({transactions, telegramMiniAppUrl}: {transactions: Transaction[], telegramMiniAppUrl: string}) {
+  return transactions.map(transaction => {
+    const transactionId = transaction['_id'].toString();
+    const params = new URLSearchParams();
+    params.set('startapp', `giftReceive-${transactionId}`);
+    const url = `${telegramMiniAppUrl}/${params.toString()}`
+    return {
     type: 'article',
-    id: index,
+    id: transactionId,
     title: 'Send gift',
     input_message_content: {
       message_text: 'I have a gift for you! Tap the button below to open it.'
@@ -20,5 +25,5 @@ export function mapTransactionsToAnswerInlineQuery({transactions, url}: {transac
         ],
       ],
     }
-  }))
+  }})
 }

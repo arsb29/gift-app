@@ -55,9 +55,16 @@ export class BotService implements OnModuleInit {
       const transactionsFiltred = transactions.filter(({gift}) => gift.giftId.startsWith(query.query));
       const results = mapTransactionsToAnswerInlineQuery({
         transactions: transactionsFiltred,
-        url: this.configService.get('TELEGRAM_MINI_APP_URL')
+        telegramMiniAppUrl: this.configService.get('TELEGRAM_MINI_APP_URL')
       });
       this.bot.answerInlineQuery(query.id, results, {cache_time: 0});
+    });
+
+    this.bot.on('chosen_inline_result', async (query) => {
+      const {result_id} = query;
+      try {
+        if (result_id) await this.transactionService.sendGift({transactionId: result_id});
+      } catch (error) {}
     });
   }
 

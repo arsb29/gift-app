@@ -74,20 +74,31 @@ export class TransactionService {
     return this.getPopulatedTransactionById({id: transaction});
   }
 
+  async sendGift({transactionId}) {
+    const transaction = await this.getPopulatedTransactionById({id: transactionId});
+    if (!transaction) throw new HttpException('Transaction not found', 404);
+    if (transaction.status === TRANSACTION_STATUS.sendGift || transaction.status === TRANSACTION_STATUS.receiveGift) throw new HttpException('Gift already gift', 404);
+    await transaction.updateOne({'$set': {
+        status: TRANSACTION_STATUS.sendGift
+      }});
+    await this.actionsService.recordActions({gift: transaction.gift, sender: transaction.sender, transaction, type: ACTION_TYPE.send, receiver: null})
+    return this.getPopulatedTransactionById({id: transaction});
+  }
+
   async receiveGift({userFromHeader, transactionId}: { userFromHeader: UserType, transactionId: string }) {
     const receiver = await this.userService.getUser({userFromHeader});
     const transaction = await this.getTransactionById({id: transactionId});
     if (!transaction) throw new HttpException('Transaction not found', 404);
     const receiverId = receiver['_id'].toString();
     const transactionReceiverId = transaction.receiver?.['_id']?.toString();
-    const transactionSenderId = transaction.sender['_id'].toString();
+    const transactionSender = transaction.sender['_id'];
     if (transactionReceiverId && (transactionReceiverId !== receiverId)) throw new HttpException('The gift has already been received', 404);
-    if (transactionSenderId !== receiverId) throw new HttpException("Can't send a gift to yourself", 404);
     if (transactionReceiverId === receiverId) return transaction;
     await transaction.updateOne({'$set': {receiver: receiver['_id']}});
     await this.userService.addPurchasedGift({user: receiver});
     this.userService.updateUsersOrder();
-    await this.actionsService.recordActions({gift: transaction.gift?.['_id'], receiver, transaction, type: ACTION_TYPE.receive, sender: null})
+    await this.actionsService.recordActions({gift: transaction.gift?.['_id'], receiver, transaction, type: ACTION_TYPE.receive, sender: transactionSender})
+    await this.actionsService.updateReceiverOnAction({receiver, transaction});
     return this.getTransactionById({id: transaction['_id']});
   }
 
