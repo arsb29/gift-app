@@ -39,8 +39,8 @@ export class UserService {
     return user;
   }
 
-  async getUserByTelegramId({telegramId}) {
-    return this.userModel.findOne({telegramId});
+  async getUserById({id}) {
+    return this.userModel.findOne({_id: id});
   }
 
   async addPurchasedGift({user}: { user: User }) {

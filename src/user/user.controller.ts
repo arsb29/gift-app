@@ -12,9 +12,9 @@ export class UserController {
     return this.userService.getUser({userFromHeader: getUserFromHeaders(headers)});
   }
 
-  @Get(':telegramId')
-  async getUserByTelegramId(@Param('id') telegramId: string) {
-    return this.userService.getUserByTelegramId({telegramId});
+  @Get(':id')
+  async getUserById(@Param('id') id: string) {
+    return this.userService.getUserById({id});
   }
 
   @Post('leaderboard')
