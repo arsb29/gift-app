@@ -5,7 +5,7 @@ import {Transaction} from "./transaction.schema";
 import {User as UserType} from "@telegram-apps/init-data-node";
 import {UserService} from "../user/user.service";
 import {GiftService} from "../gift/gift.service";
-import {ACTION_TYPE, TRANSACTION_STATUS} from "../constants";
+import {ACTION_TYPE, CRYPTO_PAY_INVOICE_STATUS, TRANSACTION_STATUS} from "../constants";
 import {CryptoBotService} from "../cryptoBot/cryptoBot.service";
 import {toMilliseconds} from "../utils/time";
 import {ActionsService} from "../actions/actions.service";
@@ -64,14 +64,10 @@ export class TransactionService {
     const transaction = await this.getPopulatedTransactionById({id: transactionId});
     if (!transaction) throw new HttpException('Transaction not found', 404);
     if (transaction.status === TRANSACTION_STATUS.invoicePaid) return transaction;
-    const isPaid = this.cryptoBotService.checkIsPaidInvoiceForGift({invoiceId: transaction.invoiceId});
+    const invoices = await this.cryptoBotService.getInvoices({invoiceIds: [transaction.invoiceId]});
+    const isPaid = invoices[0].status === CRYPTO_PAY_INVOICE_STATUS.paid;
     if (!isPaid) throw new HttpException('Invoice not paid', 404);
-    const gift = await this.giftService.addPurchasedGift({gift: transaction.gift});
-    await transaction.updateOne({'$set': {
-      status: TRANSACTION_STATUS.invoicePaid,
-      serialNumberOfGift: gift.numberOfPurchased
-    }});
-    await this.actionsService.recordActions({gift: transaction.gift, sender: transaction.sender, transaction, type: ACTION_TYPE.buy, receiver: null})
+    await this.changeTransactionStatusToPaid({transactionId});
     return this.getPopulatedTransactionById({id: transaction});
   }
 
@@ -88,7 +84,7 @@ export class TransactionService {
 
   async receiveGift({userFromHeader, transactionId}: { userFromHeader: UserType, transactionId: string }) {
     const receiver = await this.userService.getUser({userFromHeader});
-    const transaction = await this.getTransactionById({id: transactionId});
+    const transaction = await this.getPopulatedTransactionById({id: transactionId});
     if (!transaction) throw new HttpException('Transaction not found', 404);
     const receiverId = receiver['_id'].toString();
     const transactionReceiverId = transaction.receiver?.['_id']?.toString();
@@ -100,7 +96,7 @@ export class TransactionService {
     this.userService.updateUsersOrder();
     await this.actionsService.recordActions({gift: transaction.gift?.['_id'], receiver, transaction, type: ACTION_TYPE.receive, sender: transactionSender})
     await this.actionsService.updateReceiverOnAction({receiver, transaction});
-    return this.getTransactionById({id: transaction['_id']});
+    return this.getPopulatedTransactionById({id: transaction['_id']});
   }
 
   async deleteExpiredTransactions() {
@@ -129,8 +125,24 @@ export class TransactionService {
     }, {});
   }
 
+  async changeTransactionStatusToPaid({transactionId}) {
+    const transaction = await this.getTransactionById({id: transactionId});
+    if (!transaction) return null;
+    const gift = await this.giftService.addPurchasedGift({gift: transaction.gift});
+    await transaction.updateOne({'$set': {
+        status: TRANSACTION_STATUS.invoicePaid,
+        serialNumberOfGift: gift.numberOfPurchased
+      }});
+    await this.actionsService.recordActions({gift: transaction.gift, sender: transaction.sender, transaction, type: ACTION_TYPE.buy, receiver: null})
+  }
+
   async getGiftsNeedToSend({userFromTelegram}) {
     const user = await this.userService.getUser({userFromHeader: userFromTelegram});
+    const unpaidTransactions = await this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.invoiceCreated});
+    const invoiceIds= unpaidTransactions.map(transaction => transaction.invoiceId);
+    const invoices = await this.cryptoBotService.getInvoices({invoiceIds});
+    const transactionIdsNeedToUpdate = invoices.filter(invoice => invoice.status === CRYPTO_PAY_INVOICE_STATUS.paid).map(invoice => invoice.payload);
+    await Promise.all(transactionIdsNeedToUpdate.map(async (id: any) => await this.changeTransactionStatusToPaid({transactionId: id})))
     return this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.invoicePaid}).populate('gift');
   }
 }

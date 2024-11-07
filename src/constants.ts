@@ -29,3 +29,7 @@ export const ACTION_TYPE = {
   send: 'send',
   receive: 'receive',
 } as const;
+
+export const CRYPTO_PAY_INVOICE_STATUS = {
+  paid: 'paid',
+} as const;

@@ -5,7 +5,7 @@ export function mapTransactionsToAnswerInlineQuery({transactions, telegramMiniAp
     const transactionId = transaction['_id'].toString();
     const params = new URLSearchParams();
     params.set('startapp', `giftReceive-${transactionId}`);
-    const url = `${telegramMiniAppUrl}/${params.toString()}`
+    const url = `${telegramMiniAppUrl}?${params.toString()}`
     return {
     type: 'article',
     id: transactionId,
