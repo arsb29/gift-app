@@ -4,8 +4,6 @@ import {Gift, GiftSchema} from "./gift.schema";
 import {GiftController} from "./gift.controller";
 import {GiftService} from "./gift.service";
 import {TransactionModule} from "../transaction/transaction.module";
-import {TransactionService} from "../transaction/transaction.service";
-import {UserModule} from "../user/user.module";
 
 @Module({
   imports: [

@@ -1,7 +1,8 @@
 export const GIFT_ID = {
   deliciousCake: 'deliciousCake',
   greenStar: 'greenStar',
-  blueStar: 'blueStar'
+  blueStar: 'blueStar',
+  redStar: 'redStar'
 } as const;
 
 export const TRANSACTION_STATUS = {
@@ -32,4 +33,9 @@ export const ACTION_TYPE = {
 
 export const CRYPTO_PAY_INVOICE_STATUS = {
   paid: 'paid',
+} as const;
+
+export const LANGUAGE_CODE = {
+  en: "en",
+  ru: "ru",
 } as const;

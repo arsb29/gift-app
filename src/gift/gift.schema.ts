@@ -1,10 +1,10 @@
 import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
-import {CryptoAsset} from "../types";
+import {CryptoAsset, GiftId, LanguageCode} from "../types";
 
 @Schema()
 export class Gift {
   @Prop({unique: false, required: true})
-  giftId: string;
+  giftId: GiftId;
 
   @Prop({unique: false, required: false})
   amount: number;
@@ -22,7 +22,7 @@ export class Gift {
   asset: CryptoAsset;
 
   @Prop({type: Object, unique: false, required: false})
-  title: Record<'en' | 'ru', string>;
+  title: Record<LanguageCode, string>;
 }
 
 export const GiftSchema = SchemaFactory.createForClass(Gift);
