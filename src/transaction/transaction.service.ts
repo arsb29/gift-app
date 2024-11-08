@@ -31,7 +31,7 @@ export class TransactionService {
       serialNumberOfGift: null,
       status: TRANSACTION_STATUS.transactionCreated,
       invoiceId: null,
-      expiresIn: Date.now() + toMilliseconds({hours: 25})
+      expiresIn: Date.now() + toMilliseconds({hours: 2})
     });
   }
 

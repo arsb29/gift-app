@@ -10,7 +10,7 @@ export class TransactionCron {
     private giftService: GiftService,
   ) {}
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_2_HOURS)
   async deleteExpiredTransactions() {
     await this.transactionService.deleteExpiredTransactions();
     const bookedGifts = await this.transactionService.getGroupedBookedGifts();

@@ -20,7 +20,7 @@ export class CryptoBotService {
       description: 'description', // todo надо добавить юзеру настройки и брать оттуда ru или en
       paidBtnUrl: `${this.configService.get('TELEGRAM_MINI_APP_URL')}?startapp=giftPurchased-${transaction['_id']}`, // todo почему не работает
       paidBtnName: 'viewItem',
-      expiresIn: Math.floor(toMilliseconds({hours: 24}) / 60),
+      expiresIn: Math.floor(toMilliseconds({hours: 1}) / 60),
       payload: transaction['_id']
     });
   }
