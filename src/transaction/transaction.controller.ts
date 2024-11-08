@@ -18,7 +18,7 @@ export class TransactionController {
   async buyGift(@Headers() headers: Headers, @Body() body: TransactionBuyDto) {
     return this.transactionService.createInvoice({
       _id: body._id,
-      userFromHeader: getUserFromHeaders(headers)
+      userFromTelegram: getUserFromHeaders(headers)
     });
   }
 
@@ -33,7 +33,7 @@ export class TransactionController {
   async receiveGift(@Headers() headers: Headers, @Body() body: TransactionReceiveDto) {
     return this.transactionService.receiveGift({
       transactionId: body.transactionId,
-      userFromHeader: getUserFromHeaders(headers)
+      userFromTelegram: getUserFromHeaders(headers)
     });
   }
 

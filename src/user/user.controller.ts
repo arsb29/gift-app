@@ -9,7 +9,7 @@ export class UserController {
 
   @Get()
   async getUser(@Headers() headers: Headers) {
-    return this.userService.getUser({userFromHeader: getUserFromHeaders(headers)});
+    return this.userService.getUser({userFromTelegram: getUserFromHeaders(headers)});
   }
 
   @Get(':id')

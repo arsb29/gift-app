@@ -1,7 +1,8 @@
-export function mapUserFromInlineQuery(query: any) {
+import {UserFromChat} from "../types";
+
+export function mapUserFromInlineQuery(query: any): UserFromChat {
   const {
     id,
-    photo_url: photoUrl,
     is_premium: isPremium,
     first_name: firstName,
     last_name: lastName,
@@ -9,7 +10,6 @@ export function mapUserFromInlineQuery(query: any) {
   } = query.from;
   return {
     id,
-    photoUrl,
     isPremium,
     firstName,
     lastName,

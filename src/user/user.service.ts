@@ -1,41 +1,45 @@
 import {Model} from "mongoose";
-import {Injectable} from "@nestjs/common";
+import {forwardRef, Inject, Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {User} from "./user.schema";
-import {User as UserType} from "@telegram-apps/init-data-node";
+import {UserFromTelegram} from "../types";
+import {BotService} from "../bot/bot.service";
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<User>
+    @InjectModel(User.name) private userModel: Model<User>,
+    @Inject(forwardRef(() => BotService))
+    private botService: BotService,
   ) {}
 
-  createUser({userFromHeader}: { userFromHeader: UserType }) {
+  async createUser({userFromTelegram}: { userFromTelegram: UserFromTelegram }) {
+    const userCount = await this.userModel.countDocuments();
     const {
       id: telegramId,
-      photoUrl,
       isPremium,
       firstName,
       lastName,
       username
-    } = userFromHeader;
+    } = userFromTelegram;
+    const imageId = await this.botService.getUserPhotoId({telegramId});
     const newUser = new this.userModel({
-      telegramId,
-      photoUrl,
+      firstName,
       giftsReceived: 0,
       isPremium,
-      firstName,
-      rank: null,
       lastName,
-      username,
+      rank: userCount + 1,
       registerTime: Date.now(),
+      telegramId,
+      username,
+      imageId
     });
     return newUser.save();
   }
 
-  async getUser({userFromHeader}: { userFromHeader: UserType }) {
-    const user = await this.userModel.findOne({telegramId: userFromHeader.id});
-    if (!user) return this.createUser({userFromHeader});
+  async getUser({userFromTelegram}: { userFromTelegram: UserFromTelegram }) {
+    const user = await this.userModel.findOne({telegramId: userFromTelegram.id});
+    if (!user) return this.createUser({userFromTelegram});
     return user;
   }
 
@@ -59,10 +63,6 @@ export class UserService {
       }
     }));
     await this.userModel.bulkWrite(bulkOps);
-  }
-
-  async updateUserPhoto({telegramId, imageId}): Promise<void> {
-    return this.userModel.findOneAndUpdate({telegramId, imageId});
   }
 
   async getLeaderboard({limit, page}) {

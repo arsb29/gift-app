@@ -43,8 +43,8 @@ export class TransactionService {
     return this.transactionModel.findOne({_id: id}).populate(['gift', 'sender', 'receiver']);
   }
 
-  async createInvoice({userFromHeader, _id}: { userFromHeader: UserType, _id: Types.ObjectId }) {
-    const sender = await this.userService.getUser({userFromHeader});
+  async createInvoice({userFromTelegram, _id}: { userFromTelegram: UserType, _id: Types.ObjectId }) {
+    const sender = await this.userService.getUser({userFromTelegram});
     const gift = await this.giftService.getGiftById({_id});
     if (!gift) throw new HttpException('Gift not found', 404);
     const countOfRemainingGifts = gift['totalNumberOf'] - gift['numberOfBooked'] - gift['numberOfPurchased'];
@@ -82,8 +82,8 @@ export class TransactionService {
     return this.getPopulatedTransactionById({id: transaction});
   }
 
-  async receiveGift({userFromHeader, transactionId}: { userFromHeader: UserType, transactionId: string }) {
-    const receiver = await this.userService.getUser({userFromHeader});
+  async receiveGift({userFromTelegram, transactionId}: { userFromTelegram: UserType, transactionId: string }) {
+    const receiver = await this.userService.getUser({userFromTelegram});
     const transaction = await this.getPopulatedTransactionById({id: transactionId});
     if (!transaction) throw new HttpException('Transaction not found', 404);
     const receiverId = receiver['_id'].toString();
@@ -150,14 +150,14 @@ export class TransactionService {
   }
 
   async getAllGiftsNeedToSend({userFromTelegram}) {
-    const user = await this.userService.getUser({userFromHeader: userFromTelegram});
+    const user = await this.userService.getUser({userFromTelegram});
     await this.gettingUpdatesOnCurrentTransactions();
     return this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.invoicePaid}).populate('gift');
   }
 
   async getGiftsNeedToSend({userFromTelegram, page, limit}) {
     await this.gettingUpdatesOnCurrentTransactions();
-    const user = await this.userService.getUser({userFromHeader: userFromTelegram});
+    const user = await this.userService.getUser({userFromTelegram});
     const skip = (page - 1) * limit;
     const items = await this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.invoicePaid}).populate('gift')
       .skip(skip)
