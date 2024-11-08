@@ -10,13 +10,13 @@ export class ActionsService {
     @InjectModel(Actions.name) private actionsModel: Model<Actions>,
   ) {}
 
-  async recordActions({gift, sender, receiver, type, transaction}: any) {
+  async recordActions({gift, sender, receiver, type, transaction, time}: any) {
     return this.actionsModel.create({
       gift,
       sender,
       receiver,
       transaction,
-      time: Date.now(),
+      time: time || Date.now(),
       type
     });
   }

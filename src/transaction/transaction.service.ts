@@ -91,10 +91,13 @@ export class TransactionService {
     const transactionSender = transaction.sender['_id'];
     if (transactionReceiverId && (transactionReceiverId !== receiverId)) throw new HttpException('The gift has already been received', 404);
     if (transactionReceiverId === receiverId) return transaction;
-    await transaction.updateOne({'$set': {receiver: receiver['_id']}});
+    await transaction.updateOne({'$set': {
+      receiver: receiver['_id'],
+      status: TRANSACTION_STATUS.receiveGift
+    }});
     await this.userService.addPurchasedGift({user: receiver});
     this.userService.updateUsersOrder();
-    await this.actionsService.recordActions({gift: transaction.gift?.['_id'], receiver, transaction, type: ACTION_TYPE.receive, sender: transactionSender})
+    await this.actionsService.recordActions({gift: transaction.gift?.['_id'], receiver, transaction: transaction['_id'], type: ACTION_TYPE.receive, sender: transactionSender})
     await this.actionsService.updateReceiverOnAction({receiver, transaction});
     return this.getPopulatedTransactionById({id: transaction['_id']});
   }
@@ -129,11 +132,13 @@ export class TransactionService {
     const transaction = await this.getTransactionById({id: transactionId});
     if (!transaction) return null;
     const gift = await this.giftService.addPurchasedGift({gift: transaction.gift});
+    const time = Date.now();
     await transaction.updateOne({'$set': {
         status: TRANSACTION_STATUS.invoicePaid,
-        serialNumberOfGift: gift.numberOfPurchased
+        serialNumberOfGift: gift.numberOfPurchased,
+        updateTime: time
       }});
-    await this.actionsService.recordActions({gift: transaction.gift, sender: transaction.sender, transaction, type: ACTION_TYPE.buy, receiver: null})
+    await this.actionsService.recordActions({gift: transaction.gift, sender: transaction.sender, transaction, type: ACTION_TYPE.buy, receiver: null, time})
   }
 
   async getGiftsNeedToSend({userFromTelegram}) {

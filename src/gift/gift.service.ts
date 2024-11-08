@@ -22,16 +22,18 @@ export class GiftService {
   }
 
   async addPurchasedGift({gift}: { gift: Gift }) {
-    return this.giftModel.findOneAndUpdate(
+    await this.giftModel.findOneAndUpdate(
       {_id: gift},
       {'$inc': {numberOfPurchased: 1, numberOfBooked: -1}}
     );
+    return this.getGiftById({_id: gift['_id']});
   }
 
   async addBookedGift({gift}: { gift: Gift }) {
     return this.giftModel.findOneAndUpdate(
       {_id: gift},
-      {'$inc': {numberOfBooked: 1}}
+      {'$inc': {numberOfBooked: 1}},
+      {new: true}
     );
   }
 

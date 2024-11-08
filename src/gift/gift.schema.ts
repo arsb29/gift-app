@@ -3,7 +3,7 @@ import {CryptoAsset} from "../types";
 
 @Schema()
 export class Gift {
-  @Prop({unique: true, required: true})
+  @Prop({unique: false, required: true})
   giftId: string;
 
   @Prop({unique: false, required: false})

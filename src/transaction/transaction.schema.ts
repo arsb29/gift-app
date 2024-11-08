@@ -29,6 +29,9 @@ export class Transaction {
 
   @Prop({unique: false, required: false})
   expiresIn: number;
+
+  @Prop({unique: false, required: false})
+  updateTime: number;
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
