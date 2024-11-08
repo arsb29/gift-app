@@ -17,8 +17,8 @@ export class CryptoBotService {
       amount: gift['amount'],
       currencyType: 'crypto',
       asset: gift['asset'],
-      description: 'description', // todo надо добавить юзеру настройки и брать оттуда ru или en
-      paidBtnUrl: `${this.configService.get('TELEGRAM_MINI_APP_URL')}?startapp=giftPurchased-${transaction['_id']}`, // todo почему не работает
+      description: `Purchasing a ${gift['title']['en']} gift`,
+      paidBtnUrl: `${this.configService.get('TELEGRAM_MINI_APP_URL')}?startapp=giftPurchased-${transaction['_id']}`,
       paidBtnName: 'viewItem',
       expiresIn: Math.floor(toMilliseconds({hours: 1}) / 60),
       payload: transaction['_id']
