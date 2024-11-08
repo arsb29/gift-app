@@ -165,6 +165,7 @@ export class TransactionService {
     const user = await this.userService.getUser({userFromTelegram});
     const skip = (page - 1) * limit;
     const items = await this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.invoicePaid})
+      .sort({updateTime: 1})
       .skip(skip)
       .limit(limit)
       .populate('gift');
@@ -179,6 +180,7 @@ export class TransactionService {
     const user = await this.userService.getUserById({id: userId});
     const skip = (page - 1) * limit;
     const items = await this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.receiveGift})
+      .sort({updateTime: 1})
       .skip(skip)
       .limit(limit)
       .populate(['gift', 'sender', 'receiver']);
