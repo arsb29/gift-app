@@ -1,7 +1,12 @@
 import {Body, Controller, Get, Headers, Post} from "@nestjs/common";
 import {TransactionService} from "./transaction.service";
 import {getUserFromHeaders} from "../utils/getUserTelegramId";
-import {TransactionBuyDto, TransactionCheckDto, TransactionReceiveDto} from "./transaction.dto";
+import {
+  TransactionBuyDto,
+  TransactionCheckDto,
+  TransactionNeedToSendDto,
+  TransactionReceiveDto
+} from "./transaction.dto";
 
 @Controller('api/transaction')
 export class TransactionController {
@@ -32,10 +37,12 @@ export class TransactionController {
     });
   }
 
-  @Get('needToSend')
-  async getGiftsNeedToSend(@Headers() headers: Headers) {
+  @Post('needToSend')
+  async getGiftsNeedToSend(@Headers() headers: Headers, @Body() body: TransactionNeedToSendDto) {
     return this.transactionService.getGiftsNeedToSend({
-      userFromTelegram: getUserFromHeaders(headers)
+      userFromTelegram: getUserFromHeaders(headers),
+      page: body.page,
+      limit: body.limit
     });
   }
 }

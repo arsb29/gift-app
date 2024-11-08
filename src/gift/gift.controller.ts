@@ -2,7 +2,7 @@ import {Body, Controller, Post} from "@nestjs/common";
 import {GiftService} from "./gift.service";
 import {GiftsDto} from "./gift.dto";
 
-@Controller('api/gifts')
+@Controller('api/store')
 export class GiftController {
   constructor(
     private giftService: GiftService

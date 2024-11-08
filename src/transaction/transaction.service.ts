@@ -141,13 +141,31 @@ export class TransactionService {
     await this.actionsService.recordActions({gift: transaction.gift, sender: transaction.sender, transaction, type: ACTION_TYPE.buy, receiver: null, time})
   }
 
-  async getGiftsNeedToSend({userFromTelegram}) {
-    const user = await this.userService.getUser({userFromHeader: userFromTelegram});
-    const unpaidTransactions = await this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.invoiceCreated});
+  async gettingUpdatesOnCurrentTransactions() {
+    const unpaidTransactions = await this.transactionModel.find({status: TRANSACTION_STATUS.invoiceCreated});
     const invoiceIds= unpaidTransactions.map(transaction => transaction.invoiceId);
     const invoices = await this.cryptoBotService.getInvoices({invoiceIds});
     const transactionIdsNeedToUpdate = invoices.filter(invoice => invoice.status === CRYPTO_PAY_INVOICE_STATUS.paid).map(invoice => invoice.payload);
-    await Promise.all(transactionIdsNeedToUpdate.map(async (id: any) => await this.changeTransactionStatusToPaid({transactionId: id})))
+    return Promise.all(transactionIdsNeedToUpdate.map(async (id: any) => await this.changeTransactionStatusToPaid({transactionId: id})))
+  }
+
+  async getAllGiftsNeedToSend({userFromTelegram}) {
+    const user = await this.userService.getUser({userFromHeader: userFromTelegram});
+    await this.gettingUpdatesOnCurrentTransactions();
     return this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.invoicePaid}).populate('gift');
+  }
+
+  async getGiftsNeedToSend({userFromTelegram, page, limit}) {
+    await this.gettingUpdatesOnCurrentTransactions();
+    const user = await this.userService.getUser({userFromHeader: userFromTelegram});
+    const skip = (page - 1) * limit;
+    const items = await this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.invoicePaid}).populate('gift')
+      .skip(skip)
+      .limit(limit);
+    return {
+      items,
+      currentPage: page,
+      hasMore: items.length === limit,
+    };
   }
 }

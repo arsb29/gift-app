@@ -51,7 +51,7 @@ export class BotService implements OnModuleInit {
 
   initializeInlineMode() {
     this.bot.on('inline_query', async (query) => {
-      const transactions = await this.transactionService.getGiftsNeedToSend({userFromTelegram: mapUserFromInlineQuery(query)});
+      const transactions = await this.transactionService.getAllGiftsNeedToSend({userFromTelegram: mapUserFromInlineQuery(query)});
       const transactionsFiltred = transactions.filter(({gift}) => gift.giftId.startsWith(query.query));
       const results = mapTransactionsToAnswerInlineQuery({
         transactions: transactionsFiltred,

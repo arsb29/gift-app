@@ -1,4 +1,4 @@
-import {IsNotEmpty, IsString, IsMongoId} from "class-validator";
+import {IsNotEmpty, IsString, IsMongoId, IsNumber} from "class-validator";
 import {Types} from "mongoose";
 
 export class TransactionBuyDto {
@@ -18,4 +18,14 @@ export class TransactionReceiveDto {
   @IsNotEmpty()
   @IsMongoId()
   transactionId: string;
+}
+
+export class TransactionNeedToSendDto {
+  @IsNotEmpty()
+  @IsNumber()
+  page: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  limit: number;
 }
