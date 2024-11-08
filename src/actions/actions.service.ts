@@ -38,7 +38,7 @@ export class ActionsService {
     return {
       items,
       currentPage: page,
-      hasMore: items.length > limit,
+      hasMore: items.length === limit,
     };
   }
 
@@ -52,7 +52,7 @@ export class ActionsService {
     return {
       items,
       currentPage: page,
-      hasMore: items.length > limit,
+      hasMore: items.length === limit,
     };
   }
 
@@ -66,7 +66,7 @@ export class ActionsService {
     return {
       items,
       currentPage: page,
-      hasMore: items.length > limit,
+      hasMore: items.length === limit,
     };
   }
 }

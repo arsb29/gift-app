@@ -13,6 +13,18 @@ export class GiftService {
     return this.giftModel.find();
   }
 
+  async getAllGiftsWithPages({limit, page}) {
+    const skip = (page - 1) * limit;
+    const items = await this.giftModel.find()
+      .skip(skip)
+      .limit(limit);
+    return {
+      items,
+      currentPage: page,
+      hasMore: items.length === limit,
+    };
+  }
+
   async getGiftByGiftId({giftId}: {giftId: string}) {
     return this.giftModel.findOne({giftId: giftId});
   }

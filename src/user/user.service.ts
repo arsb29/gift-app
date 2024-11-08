@@ -74,7 +74,7 @@ export class UserService {
     return {
       items,
       currentPage: page,
-      hasMore: items.length > limit,
+      hasMore: items.length === limit,
     };
   }
 }
