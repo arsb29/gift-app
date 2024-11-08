@@ -29,3 +29,17 @@ export class TransactionNeedToSendDto {
   @IsNumber()
   limit: number;
 }
+
+export class TransactionGiftsReceivedDto {
+  @IsNotEmpty()
+  @IsMongoId()
+  userId: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  page: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  limit: number;
+}

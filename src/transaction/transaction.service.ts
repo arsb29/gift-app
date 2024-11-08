@@ -54,7 +54,8 @@ export class TransactionService {
     await transaction.updateOne({'$set': {
       invoiceId: invoice.id,
       miniAppPayUrl: invoice.miniAppPayUrl,
-      status: TRANSACTION_STATUS.invoiceCreated
+      status: TRANSACTION_STATUS.invoiceCreated,
+      updateTime: Date.now()
     }});
     await this.giftService.addBookedGift({gift});
     return this.getTransactionById({id: transaction['_id']});
@@ -75,10 +76,12 @@ export class TransactionService {
     const transaction = await this.getPopulatedTransactionById({id: transactionId});
     if (!transaction) throw new HttpException('Transaction not found', 404);
     if (transaction.status === TRANSACTION_STATUS.sendGift || transaction.status === TRANSACTION_STATUS.receiveGift) throw new HttpException('Gift already gift', 404);
+    const time = Date.now();
     await transaction.updateOne({'$set': {
-        status: TRANSACTION_STATUS.sendGift
+        status: TRANSACTION_STATUS.sendGift,
+        updateTime: time
       }});
-    await this.actionsService.recordActions({gift: transaction.gift, sender: transaction.sender, transaction, type: ACTION_TYPE.send, receiver: null})
+    await this.actionsService.recordActions({gift: transaction.gift, sender: transaction.sender, transaction, type: ACTION_TYPE.send, receiver: null, time})
     return this.getPopulatedTransactionById({id: transaction});
   }
 
@@ -91,13 +94,15 @@ export class TransactionService {
     const transactionSender = transaction.sender['_id'];
     if (transactionReceiverId && (transactionReceiverId !== receiverId)) throw new HttpException('The gift has already been received', 404);
     if (transactionReceiverId === receiverId) return transaction;
+    const time = Date.now();
     await transaction.updateOne({'$set': {
       receiver: receiver['_id'],
-      status: TRANSACTION_STATUS.receiveGift
+      status: TRANSACTION_STATUS.receiveGift,
+      updateTime: time
     }});
     await this.userService.addPurchasedGift({user: receiver});
     this.userService.updateUsersOrder();
-    await this.actionsService.recordActions({gift: transaction.gift?.['_id'], receiver, transaction: transaction['_id'], type: ACTION_TYPE.receive, sender: transactionSender})
+    await this.actionsService.recordActions({gift: transaction.gift?.['_id'], receiver, transaction: transaction['_id'], type: ACTION_TYPE.receive, sender: transactionSender, time})
     await this.actionsService.updateReceiverOnAction({receiver, transaction});
     return this.getPopulatedTransactionById({id: transaction['_id']});
   }
@@ -159,9 +164,24 @@ export class TransactionService {
     await this.gettingUpdatesOnCurrentTransactions();
     const user = await this.userService.getUser({userFromTelegram});
     const skip = (page - 1) * limit;
-    const items = await this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.invoicePaid}).populate('gift')
+    const items = await this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.invoicePaid})
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .populate('gift');
+    return {
+      items,
+      currentPage: page,
+      hasMore: items.length === limit,
+    };
+  }
+
+  async getGiftsReceived({userId, page, limit}) {
+    const user = await this.userService.getUserById({id: userId});
+    const skip = (page - 1) * limit;
+    const items = await this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.receiveGift})
+      .skip(skip)
+      .limit(limit)
+      .populate(['gift', 'sender', 'receiver']);
     return {
       items,
       currentPage: page,

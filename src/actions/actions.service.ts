@@ -55,18 +55,4 @@ export class ActionsService {
       hasMore: items.length === limit,
     };
   }
-
-  async getUserReceiveActions({user, limit, page}) {
-    const skip = (page - 1) * limit;
-    const items = await this.actionsModel.find({receiver: user, type: ACTION_TYPE.receive})
-      .sort({ time: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate(['gift', 'receiver', 'sender', 'transaction'])
-    return {
-      items,
-      currentPage: page,
-      hasMore: items.length === limit,
-    };
-  }
 }

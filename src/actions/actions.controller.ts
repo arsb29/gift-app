@@ -25,13 +25,4 @@ export class ActionsController {
       limit: body.limit
     });
   }
-
-  @Post('user/receive')
-  async getUserReceiveActions(@Body() body: UserActionsDto) {
-    return this.actionsService.getUserReceiveActions({
-      user: body.user,
-      page: body.page,
-      limit: body.limit
-    });
-  }
 }
