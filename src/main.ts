@@ -5,6 +5,8 @@ import { readFileSync } from 'fs';
 import * as path from 'path';
 import { AppModule } from './app.module';
 import {AuthGuard} from "./guards/auth";
+import {HttpExceptionFilter} from "./filters/everything.filter";
+import {BotService} from "./bot/bot.service";
 
 async function bootstrap() {
   const ssl = process.env.SSL === 'true';
@@ -19,6 +21,7 @@ async function bootstrap() {
   }
   const app = await NestFactory.create(AppModule, {httpsOptions});
   const configService = app.get(ConfigService);
+  const botService = app.get(BotService);
   app.enableCors({
     origin: [
       'https://localhost:5173',
@@ -27,6 +30,7 @@ async function bootstrap() {
     ],
   });
   app.useGlobalGuards(new AuthGuard(configService));
+  app.useGlobalFilters(new HttpExceptionFilter(configService, botService));
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(3000);
 }

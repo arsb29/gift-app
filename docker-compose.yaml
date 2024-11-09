@@ -3,13 +3,11 @@ services:
     build:
       dockerfile: Dockerfile
       context: .
-      # Only will build development stage from our dockerfile
       target: development
     volumes:
       - .:/usr/src/app
     env_file:
       - .env
-    # Run a command against the development stage of the image
     command: npm run start:dev
     ports:
       - '3000:3000'
@@ -17,12 +15,12 @@ services:
         - database
 
   api-prod:
-    image: arsb29/bull:latest
+    image: arsb29/gift-app:latest
     volumes:
       - .:/usr/src/app
       - ./assets:/usr/src/app/assets
-      - /etc/letsencrypt/live/bullcoin.ru/fullchain.pem:/etc/letsencrypt/live/bullcoin.ru/fullchain.pem
-      - /etc/letsencrypt/live/bullcoin.ru/privkey.pem:/etc/letsencrypt/live/bullcoin.ru/privkey.pem
+      - /etc/letsencrypt/live/giftapp.space/fullchain.pem:/etc/letsencrypt/live/giftapp.space/fullchain.pem
+      - /etc/letsencrypt/live/giftapp.space/privkey.pem:/etc/letsencrypt/live/giftapp.space/privkey.pem
     env_file:
       - .env
     ports:
