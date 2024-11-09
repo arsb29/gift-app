@@ -21,7 +21,7 @@ jobs:
       - name: Build and push Docker image
         run: |
           docker build -t gift-app .
-          docker tag bull arsb29/gift-app:latest
+          docker tag gift-app arsb29/gift-app:latest
           docker login -u arsb29 -p ${{ secrets.DOCKERHUB_PASSWORD }}
           docker push arsb29/gift-app:latest
 
