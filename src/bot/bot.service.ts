@@ -39,7 +39,7 @@ export class BotService implements OnModuleInit {
             [
               {
                 text: 'Open App',
-                web_app: { url: this.configService.get('TELEGRAM_MINI_APP_DIRECT_URL') },
+                url: this.configService.get('TELEGRAM_MINI_APP_URL'),
               },
             ],
           ],
