@@ -11,6 +11,7 @@ import {toMilliseconds} from "../utils/time";
 import {ActionsService} from "../actions/actions.service";
 import {BotService} from "../bot/bot.service";
 import {formatName} from "../utils/formatName";
+import {TransactionStatus} from "../types";
 
 @Injectable()
 export class TransactionService {
@@ -145,6 +146,7 @@ export class TransactionService {
   async changeTransactionStatusToPaid({transactionId}) {
     const transaction = await this.getPopulatedTransactionById({id: transactionId});
     if (!transaction) return null;
+    if (([TRANSACTION_STATUS.invoicePaid, TRANSACTION_STATUS.sendGift, TRANSACTION_STATUS.receiveGift] as TransactionStatus[]).includes(transaction.status)) return null;
     const gift = await this.giftService.addPurchasedGift({gift: transaction.gift});
     const time = Date.now();
     await transaction.updateOne({'$set': {
