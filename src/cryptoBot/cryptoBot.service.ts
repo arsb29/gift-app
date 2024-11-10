@@ -49,10 +49,6 @@ export class CryptoBotService {
     console.log('clientRes')
     console.log(clientRes)
     invoices.set(invoiceId, clientRes);
-
-    setInterval(() => {
-      this.clientUpdate({invoiceId})
-    }, 3000)
   }
 
   clientOff({invoiceId}) {
