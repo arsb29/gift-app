@@ -1,14 +1,19 @@
-import {Injectable} from "@nestjs/common";
+import {forwardRef, Inject, Injectable} from "@nestjs/common";
 import {ConfigService} from "@nestjs/config";
 import {toMilliseconds} from "../utils/time";
 import {CRYPTO_PAY_INVOICE_STATUS} from "../constants";
+import {TransactionService} from "../transaction/transaction.service";
 const CryptoBotAPI = require('crypto-bot-api');
 
 const invoices = new Map();
 
 @Injectable()
 export class CryptoBotService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    @Inject(forwardRef(() => TransactionService))
+    private readonly transactionService: TransactionService,
+  ) {}
 
   cryptoBot = new CryptoBotAPI(
     this.configService.get('TELEGRAM_CRYPTO_BOT_TOKEN'),
@@ -32,7 +37,9 @@ export class CryptoBotService {
   }
 
   clientUpdate({invoiceId}) {
-    if (invoices.has(invoiceId)) invoices.get(invoiceId).write(`data: ${CRYPTO_PAY_INVOICE_STATUS.paid}\n\n`);
+    this.transactionService.updatePaidTransactions({invoiceIds: [invoiceId]});
+    const id = String(invoiceId);
+    if (invoices.has(id)) invoices.get(id).write(`data: ${CRYPTO_PAY_INVOICE_STATUS.paid}\n\n`);
   }
 
   clientOn({invoiceId, clientRes}) {

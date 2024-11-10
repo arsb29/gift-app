@@ -20,6 +20,7 @@ export class TransactionService {
     private giftService: GiftService,
     @Inject(forwardRef(() => ActionsService))
     private actionsService: ActionsService,
+    @Inject(forwardRef(() => CryptoBotService))
     private cryptoBotService: CryptoBotService
   ) {}
 
@@ -149,22 +150,27 @@ export class TransactionService {
     await this.actionsService.recordActions({gift: transaction.gift, sender: transaction.sender, transaction, type: ACTION_TYPE.buy, receiver: null, time})
   }
 
-  async gettingUpdatesOnCurrentTransactions() {
+  async getInvoicesIdsToUpdate({invoiceIds}: {invoiceIds?: number[] }) {
+    if (invoiceIds) return invoiceIds;
     const unpaidTransactions = await this.transactionModel.find({status: TRANSACTION_STATUS.invoiceCreated});
-    const invoiceIds= unpaidTransactions.map(transaction => transaction.invoiceId);
-    const invoices = await this.cryptoBotService.getInvoices({invoiceIds});
+    return unpaidTransactions.map(transaction => transaction.invoiceId) || [];
+  }
+
+  async updatePaidTransactions({invoiceIds}: {invoiceIds?: number[]}) {
+    const ids = await this.getInvoicesIdsToUpdate({invoiceIds});
+    const invoices = await this.cryptoBotService.getInvoices({invoiceIds: ids});
     const transactionIdsNeedToUpdate = invoices.filter(invoice => invoice.status === CRYPTO_PAY_INVOICE_STATUS.paid).map(invoice => invoice.payload);
     return Promise.all(transactionIdsNeedToUpdate.map(async (id: any) => await this.changeTransactionStatusToPaid({transactionId: id})))
   }
 
   async getAllGiftsNeedToSend({userFromTelegram}) {
     const user = await this.userService.getUser({userFromTelegram});
-    await this.gettingUpdatesOnCurrentTransactions();
+    await this.updatePaidTransactions({});
     return this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.invoicePaid}).populate('gift');
   }
 
   async getGiftsNeedToSend({userFromTelegram, page, limit}) {
-    await this.gettingUpdatesOnCurrentTransactions();
+    await this.updatePaidTransactions({});
     const user = await this.userService.getUser({userFromTelegram});
     const skip = (page - 1) * limit;
     const items = await this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.invoicePaid})
