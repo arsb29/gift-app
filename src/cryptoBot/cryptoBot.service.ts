@@ -1,7 +1,6 @@
 import {Injectable} from "@nestjs/common";
 import {ConfigService} from "@nestjs/config";
 import {toMilliseconds} from "../utils/time";
-import {set} from "mongoose";
 import {CRYPTO_PAY_INVOICE_STATUS} from "../constants";
 const CryptoBotAPI = require('crypto-bot-api');
 
@@ -22,8 +21,6 @@ export class CryptoBotService {
       currencyType: 'crypto',
       asset: gift['asset'],
       description: `Purchasing a ${gift['title']['en']} gift`,
-      paidBtnUrl: `${this.configService.get('TELEGRAM_MINI_APP_URL')}?startapp=giftPurchased-${transaction['_id']}`,
-      paidBtnName: 'viewItem',
       expiresIn: Math.floor(toMilliseconds({hours: 1}) / 60),
       payload: transaction['_id']
     });
@@ -35,11 +32,15 @@ export class CryptoBotService {
   }
 
   clientUpdate({invoiceId}) {
-    if (invoices.has(invoiceId)) invoices.get(invoiceId).write(CRYPTO_PAY_INVOICE_STATUS.paid);
+    if (invoices.has(invoiceId)) invoices.get(invoiceId).write(`data: ${CRYPTO_PAY_INVOICE_STATUS.paid}\n\n`);
   }
 
   clientOn({invoiceId, clientRes}) {
     invoices.set(invoiceId, clientRes);
+
+    setInterval(() => {
+      this.clientUpdate({invoiceId})
+    }, 3000)
   }
 
   clientOff({invoiceId}) {
