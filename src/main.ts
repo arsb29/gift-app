@@ -25,8 +25,10 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'https://localhost:5173',
+      'http://localhost:5173',
       'https://172.16.231.237:5173',
-      'https://192.168.1.137:5173'
+      'https://192.168.1.137:5173',
+      'https://giftapp.space'
     ],
   });
   app.useGlobalGuards(new AuthGuard(configService));
