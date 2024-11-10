@@ -1,3 +1,5 @@
+import {TransactionStatus} from "./types";
+
 export const GIFT_ID = {
   deliciousCake: 'deliciousCake',
   greenStar: 'greenStar',
@@ -12,6 +14,8 @@ export const TRANSACTION_STATUS = {
   sendGift: 'sendGift',
   receiveGift: 'receiveGift'
 } as const;
+
+export const STATUSES_WITH_PAID_TRANSACTIONS: TransactionStatus[] = [TRANSACTION_STATUS.invoicePaid, TRANSACTION_STATUS.sendGift, TRANSACTION_STATUS.receiveGift];
 
 export const CRYPTO_ASSET = {
   USDT: 'USDT',

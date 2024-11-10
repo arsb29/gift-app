@@ -5,13 +5,18 @@ import {Transaction} from "./transaction.schema";
 import {User as UserType} from "@telegram-apps/init-data-node";
 import {UserService} from "../user/user.service";
 import {GiftService} from "../gift/gift.service";
-import {ACTION_TYPE, CRYPTO_PAY_INVOICE_STATUS, TRANSACTION_STATUS} from "../constants";
+import {
+  ACTION_TYPE,
+  CRYPTO_PAY_INVOICE_STATUS,
+  STATUSES_WITH_PAID_TRANSACTIONS,
+  TRANSACTION_STATUS
+} from "../constants";
 import {CryptoBotService} from "../cryptoBot/cryptoBot.service";
 import {toMilliseconds} from "../utils/time";
 import {ActionsService} from "../actions/actions.service";
 import {BotService} from "../bot/bot.service";
 import {formatName} from "../utils/formatName";
-import {TransactionStatus} from "../types";
+
 
 @Injectable()
 export class TransactionService {
@@ -28,10 +33,6 @@ export class TransactionService {
     @Inject(forwardRef(() => BotService))
     private botService: BotService
   ) {}
-
-  async getTransactionById({id}) {
-    return this.transactionModel.findOne({_id: id});
-  }
 
   async getPopulatedTransactionById({id}) {
     return this.transactionModel.findOne({_id: id}).populate(['gift', 'sender', 'receiver']);
@@ -64,25 +65,30 @@ export class TransactionService {
       updateTime: Date.now()
     }});
     await this.giftService.addBookedGift({gift});
-    return this.getTransactionById({id: transaction['_id']});
+    return this.getPopulatedTransactionById({id: transaction['_id']});
   }
 
   async checkingThePurchasedGift({transactionId}) {
-    const transaction = await this.getPopulatedTransactionById({id: transactionId});
+    let transaction = await this.getPopulatedTransactionById({id: transactionId});
     if (!transaction) throw new HttpException('Transaction not found', 404);
-    if (transaction.status === TRANSACTION_STATUS.invoicePaid) return transaction;
-    if (transaction.status !== TRANSACTION_STATUS.invoiceCreated) throw new HttpException('Transaction not found', 404);
-    const invoices = await this.cryptoBotService.getInvoices({invoiceIds: [transaction.invoiceId]});
-    const isPaid = invoices[0].status === CRYPTO_PAY_INVOICE_STATUS.paid;
-    if (!isPaid) throw new HttpException('Invoice not paid', 404);
-    await this.changeTransactionStatusToPaid({transactionId});
-    return this.getPopulatedTransactionById({id: transaction});
+    if (STATUSES_WITH_PAID_TRANSACTIONS.includes(transaction.status)) return transaction;
+    await this.updateTransactionsFromCryptoBot([transaction.invoiceId]);
+    transaction = await this.getPopulatedTransactionById({id: transactionId});
+    if (STATUSES_WITH_PAID_TRANSACTIONS.includes(transaction.status)) return transaction;
+    throw new HttpException('Invalid transaction status', 404);
+  }
+
+  async updateTransactionsFromCryptoBot(invoiceIds?: number[]) {
+    const foundInvoicesIdsToUpdate = invoiceIds || (await this.transactionModel.find({status: TRANSACTION_STATUS.invoiceCreated})).map(transaction => transaction.invoiceId);
+    const invoices = await this.cryptoBotService.getInvoices({invoiceIds: foundInvoicesIdsToUpdate});
+    const transactionIdsNeedToUpdate = invoices.filter(invoice => invoice.status === CRYPTO_PAY_INVOICE_STATUS.paid).map(invoice => invoice.payload);
+    return Promise.all(transactionIdsNeedToUpdate.map(async (id: any) => await this.changeTransactionStatusToPaid({transactionId: id})))
   }
 
   async changeTransactionStatusToPaid({transactionId}) {
     const transaction = await this.getPopulatedTransactionById({id: transactionId});
     if (!transaction) return null;
-    if (TRANSACTION_STATUS.invoiceCreated !== transaction.status) return null;
+    if (STATUSES_WITH_PAID_TRANSACTIONS.includes(transaction.status)) return null;
     const gift = await this.giftService.addPurchasedGift({gift: transaction.gift});
     const time = Date.now();
     await transaction.updateOne({'$set': {
@@ -122,7 +128,7 @@ export class TransactionService {
       status: TRANSACTION_STATUS.receiveGift,
       updateTime: time
     }});
-    await this.userService.addPurchasedGift({user: receiver});
+    await this.userService.addReceivedGift({user: receiver});
     this.userService.updateUsersOrder();
     await this.actionsService.recordActions({gift: transaction.gift?.['_id'], receiver, transaction: transaction['_id'], type: ACTION_TYPE.receive, sender: transactionSender, time});
     await this.botService.sendMessage({chatId: transaction.sender.telegramId, message: `👌 <b>${formatName(receiver)}</b> received your gift of <b>${transaction.gift.title.en}</b>`})
@@ -159,27 +165,14 @@ export class TransactionService {
     }, {});
   }
 
-  async getInvoicesIdsToUpdate({invoiceIds}: {invoiceIds?: number[] }) {
-    if (invoiceIds) return invoiceIds;
-    const unpaidTransactions = await this.transactionModel.find({status: TRANSACTION_STATUS.invoiceCreated});
-    return unpaidTransactions.map(transaction => transaction.invoiceId) || [];
-  }
-
-  async updatePaidTransactions({invoiceIds}: {invoiceIds?: number[]}) {
-    const ids = await this.getInvoicesIdsToUpdate({invoiceIds});
-    const invoices = await this.cryptoBotService.getInvoices({invoiceIds: ids});
-    const transactionIdsNeedToUpdate = invoices.filter(invoice => invoice.status === CRYPTO_PAY_INVOICE_STATUS.paid).map(invoice => invoice.payload);
-    return Promise.all(transactionIdsNeedToUpdate.map(async (id: any) => await this.changeTransactionStatusToPaid({transactionId: id})))
-  }
-
   async getAllGiftsNeedToSend({userFromTelegram}) {
     const user = await this.userService.getUser({userFromTelegram});
-    await this.updatePaidTransactions({});
+    await this.updateTransactionsFromCryptoBot();
     return this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.invoicePaid}).populate('gift');
   }
 
   async getGiftsNeedToSend({userFromTelegram, page, limit}) {
-    await this.updatePaidTransactions({});
+    await this.updateTransactionsFromCryptoBot();
     const user = await this.userService.getUser({userFromTelegram});
     const skip = (page - 1) * limit;
     const items = await this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.invoicePaid})

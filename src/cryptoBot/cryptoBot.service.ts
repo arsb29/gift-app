@@ -37,7 +37,7 @@ export class CryptoBotService {
   }
 
   clientUpdate({invoiceId}) {
-    this.transactionService.updatePaidTransactions({invoiceIds: [invoiceId]});
+    this.transactionService.updateTransactionsFromCryptoBot([invoiceId]);
     const id = String(invoiceId);
     if (invoices.has(id)) invoices.get(id).write(`data: ${CRYPTO_PAY_INVOICE_STATUS.paid}\n\n`);
   }

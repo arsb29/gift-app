@@ -47,7 +47,7 @@ export class UserService {
     return this.userModel.findOne({_id: id});
   }
 
-  async addPurchasedGift({user}: { user: User }) {
+  async addReceivedGift({user}: { user: User }) {
     return this.userModel.findOneAndUpdate(
       {_id: user},
       {'$inc': {giftsReceived: 1}}
