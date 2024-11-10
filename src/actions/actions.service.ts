@@ -44,7 +44,11 @@ export class ActionsService {
 
   async getUserActions({user, limit, page}) {
     const skip = (page - 1) * limit;
-    const items = await this.actionsModel.find({$or : [{sender: user}, {receiver: user}]})
+    const items = await this.actionsModel.find({$or : [
+      {sender: user, type: ACTION_TYPE.buy},
+      {sender: user, type: ACTION_TYPE.send},
+      {receiver: user, type: ACTION_TYPE.receive}
+      ]})
       .sort({ time: -1 })
       .skip(skip)
       .limit(limit)
