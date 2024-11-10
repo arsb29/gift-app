@@ -182,7 +182,7 @@ export class TransactionService {
   async getGiftsReceived({userId, page, limit}) {
     const user = await this.userService.getUserById({id: userId});
     const skip = (page - 1) * limit;
-    const items = await this.transactionModel.find({sender: user, status: TRANSACTION_STATUS.receiveGift})
+    const items = await this.transactionModel.find({receiver: user, status: TRANSACTION_STATUS.receiveGift})
       .sort({updateTime: 1})
       .skip(skip)
       .limit(limit)
