@@ -32,10 +32,22 @@ export class CryptoBotService {
   }
 
   clientUpdate({invoiceId}) {
+    console.log('clientUpdate')
+    console.log('invoices.keys()')
+    console.log(invoices.keys())
+    console.log('invoices.has(invoiceId)')
+    console.log(invoices.has(invoiceId))
     if (invoices.has(invoiceId)) invoices.get(invoiceId).write(`data: ${CRYPTO_PAY_INVOICE_STATUS.paid}\n\n`);
   }
 
   clientOn({invoiceId, clientRes}) {
+    console.log('clientOn')
+    console.log('invoiceId')
+    console.log(invoiceId)
+    console.log('typeof invoiceId')
+    console.log(typeof invoiceId)
+    console.log('clientRes')
+    console.log(clientRes)
     invoices.set(invoiceId, clientRes);
 
     setInterval(() => {
