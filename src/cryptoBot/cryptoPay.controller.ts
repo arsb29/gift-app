@@ -18,6 +18,7 @@ export class CryptoPayController {
     @Headers('crypto-pay-api-signature') signature: string
   ) {
     const cryptoBotToken = this.configService.get('TELEGRAM_CRYPTO_BOT_TOKEN');
+    console.log(body)
     try {
       checkSignature(cryptoBotToken, {body, signature});
       const invoiceId = body?.payload?.invoice_id;
