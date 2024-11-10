@@ -91,7 +91,9 @@ export class BotService implements OnModuleInit {
 
   async sendLogs({message}: {message: string}) {
     const chatId = this.configService.get('TELEGRAM_ERROR_LOGS_CHANNEL_ID');
-    return this.bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
+    // Выключил отправку логов в телеграм из-за большого числа запросов
+    // Too Many Requests: retry after 3
+    // return this.bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
   }
 
   idFile() {
