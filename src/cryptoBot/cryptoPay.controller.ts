@@ -11,7 +11,6 @@ export class CryptoPayController {
   constructor(
     private cryptoBotService: CryptoBotService,
     private readonly configService: ConfigService,
-    private readonly botService: BotService,
   ) {}
 
   @Post('update')
@@ -20,15 +19,9 @@ export class CryptoPayController {
     @Headers('crypto-pay-api-signature') signature: string
   ) {
     const cryptoBotToken = this.configService.get('TELEGRAM_CRYPTO_BOT_TOKEN');
-    this.botService.sendMessage({message: JSON.stringify({body})});
-    console.log('webhookUpdate')
     try {
       checkSignature(cryptoBotToken, {body, signature});
       const invoiceId = String(body?.payload?.invoice_id);
-      console.log('invoiceId')
-      console.log(invoiceId)
-      console.log('typeof invoiceId')
-      console.log(typeof invoiceId)
       return this.cryptoBotService.clientUpdate({invoiceId});
     } catch (error) {
       throw new HttpException('Invalid webhook', 404);
