@@ -23,7 +23,7 @@ export class CryptoPayController {
     this.botService.sendMessage({message: JSON.stringify({body})});
     try {
       checkSignature(cryptoBotToken, {body, signature});
-      const invoiceId = body?.payload?.invoice_id;
+      const invoiceId = body?.payload?.invoice_id.toString();
       return this.cryptoBotService.clientUpdate({invoiceId});
     } catch (error) {
       throw new HttpException('Invalid webhook', 404);
