@@ -3,6 +3,7 @@ import {CryptoBotService} from "./cryptoBot.service";
 import {checkSignature} from "../utils/checkSignature";
 import {ConfigService} from "@nestjs/config";
 import {Public} from "../decorators/public";
+import {BotService} from "../bot/bot.service";
 
 @Public()
 @Controller('api/cryptoPay')
@@ -10,6 +11,7 @@ export class CryptoPayController {
   constructor(
     private cryptoBotService: CryptoBotService,
     private readonly configService: ConfigService,
+    private readonly botService: BotService,
   ) {}
 
   @Post('update')
@@ -18,7 +20,7 @@ export class CryptoPayController {
     @Headers('crypto-pay-api-signature') signature: string
   ) {
     const cryptoBotToken = this.configService.get('TELEGRAM_CRYPTO_BOT_TOKEN');
-    console.log(body)
+    this.botService.sendMessage({message: JSON.stringify({body})});
     try {
       checkSignature(cryptoBotToken, {body, signature});
       const invoiceId = body?.payload?.invoice_id;

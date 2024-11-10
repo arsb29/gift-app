@@ -50,9 +50,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
 
-    const chatId = this.configService.get('TELEGRAM_ERROR_LOGS_CHANNEL_ID');
     const message = getLog({request, exception});
-    this.botService.bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
+    this.botService.sendMessage({message})
       .then(() => {
         console.log('Message sent');
       })
