@@ -1,12 +1,24 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import {ConfigService} from "@nestjs/config";
-import { validate } from '@telegram-apps/init-data-node';
+import {Reflector} from "@nestjs/core";
+import {IS_PUBLIC_KEY} from "../decorators/public";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private reflector: Reflector
+  ) {}
 
   canActivate(context: ExecutionContext): boolean {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) {
+      return true;
+    }
+
     const request = context.switchToHttp().getRequest();
     return validateRequest({request, token: this.configService.get('TELEGRAM_BOT_TOKEN')});
   }

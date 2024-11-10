@@ -7,6 +7,8 @@ import { AppModule } from './app.module';
 import {AuthGuard} from "./guards/auth";
 import {HttpExceptionFilter} from "./filters/everything.filter";
 import {BotService} from "./bot/bot.service";
+import { Reflector } from '@nestjs/core';
+
 
 async function bootstrap() {
   const ssl = process.env.SSL === 'true';
@@ -21,6 +23,7 @@ async function bootstrap() {
   }
   const app = await NestFactory.create(AppModule, {httpsOptions});
   const configService = app.get(ConfigService);
+  const reflector = app.get(Reflector);
   const botService = app.get(BotService);
   app.enableCors({
     origin: [
@@ -31,7 +34,7 @@ async function bootstrap() {
       'https://giftapp.space'
     ],
   });
-  app.useGlobalGuards(new AuthGuard(configService));
+  app.useGlobalGuards(new AuthGuard(configService, reflector));
   app.useGlobalFilters(new HttpExceptionFilter(configService, botService));
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(3000);

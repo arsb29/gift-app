@@ -2,9 +2,11 @@ import {Body, Controller, Post, Headers, HttpException} from "@nestjs/common";
 import {CryptoBotService} from "./cryptoBot.service";
 import {checkSignature} from "../utils/checkSignature";
 import {ConfigService} from "@nestjs/config";
+import {Public} from "../decorators/public";
 
+@Public()
 @Controller('api/cryptoPay')
-export class GiftController {
+export class CryptoPayController {
   constructor(
     private cryptoBotService: CryptoBotService,
     private readonly configService: ConfigService,
