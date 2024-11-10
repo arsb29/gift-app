@@ -26,7 +26,7 @@ export class CryptoBotService {
       currencyType: 'crypto',
       asset: gift['asset'],
       description: `Purchasing a ${gift['title']['en']} gift`,
-      expiresIn: Math.floor(toMilliseconds({hours: 1}) / 60),
+      expiresIn: Math.floor(toMilliseconds({minutes: 10}) / 60),
       payload: transaction['_id']
     });
   }
