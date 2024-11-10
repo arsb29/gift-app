@@ -14,7 +14,7 @@ export function mapTransactionsToAnswerInlineQuery({transactions, telegramMiniAp
       message_text: '🎁 I have a gift for you! Tap the button below to open it.'
     },
     description: `Send gift of ${transaction.gift.title.en}`,
-    thumbnail_url: 'https://i.postimg.cc/K8F3Cgcf/avatar.png',
+    thumbnail_url: 'https://giftapp.space/thumbnail.png',
     reply_markup: {
       inline_keyboard: [
         [

@@ -45,8 +45,8 @@ export class BotService implements OnModuleInit {
           ],
         },
       };
-      const photoPath = fs.readFileSync('/usr/src/app/src/assets/img.png'); // Путь к локальному изображению
-      this.bot.sendPhoto(chatId, photoPath, options);
+      const photoUrl = 'https://giftapp.space/img.png'; // Путь к локальному изображению
+      this.bot.sendPhoto(chatId, photoUrl, options);
     });
   }
 
