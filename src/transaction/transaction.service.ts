@@ -9,6 +9,8 @@ import {ACTION_TYPE, CRYPTO_PAY_INVOICE_STATUS, TRANSACTION_STATUS} from "../con
 import {CryptoBotService} from "../cryptoBot/cryptoBot.service";
 import {toMilliseconds} from "../utils/time";
 import {ActionsService} from "../actions/actions.service";
+import {BotService} from "../bot/bot.service";
+import {formatName} from "../utils/formatName";
 
 @Injectable()
 export class TransactionService {
@@ -21,7 +23,9 @@ export class TransactionService {
     @Inject(forwardRef(() => ActionsService))
     private actionsService: ActionsService,
     @Inject(forwardRef(() => CryptoBotService))
-    private cryptoBotService: CryptoBotService
+    private cryptoBotService: CryptoBotService,
+    @Inject(forwardRef(() => BotService))
+    private botService: BotService
   ) {}
 
   async createTransaction({gift, sender}) {
@@ -103,7 +107,8 @@ export class TransactionService {
     }});
     await this.userService.addPurchasedGift({user: receiver});
     this.userService.updateUsersOrder();
-    await this.actionsService.recordActions({gift: transaction.gift?.['_id'], receiver, transaction: transaction['_id'], type: ACTION_TYPE.receive, sender: transactionSender, time})
+    await this.actionsService.recordActions({gift: transaction.gift?.['_id'], receiver, transaction: transaction['_id'], type: ACTION_TYPE.receive, sender: transactionSender, time});
+    await this.botService.sendMessage({chatId: transaction.sender.telegramId, message: `👌 <b>${formatName(receiver)}</b> received your gift of <b>${transaction.gift.title.en}</b>`})
     await this.actionsService.updateReceiverOnAction({receiver, transaction});
     return this.getPopulatedTransactionById({id: transaction['_id']});
   }
@@ -138,7 +143,7 @@ export class TransactionService {
   }
 
   async changeTransactionStatusToPaid({transactionId}) {
-    const transaction = await this.getTransactionById({id: transactionId});
+    const transaction = await this.getPopulatedTransactionById({id: transactionId});
     if (!transaction) return null;
     const gift = await this.giftService.addPurchasedGift({gift: transaction.gift});
     const time = Date.now();
@@ -147,6 +152,7 @@ export class TransactionService {
         serialNumberOfGift: gift.numberOfPurchased,
         updateTime: time
       }});
+    await this.botService.sendMessage({chatId: transaction.sender.telegramId, message: `✅ You have purchsed the gift of <b>${transaction.gift.title.en}</b>`})
     await this.actionsService.recordActions({gift: transaction.gift, sender: transaction.sender, transaction, type: ACTION_TYPE.buy, receiver: null, time})
   }
 

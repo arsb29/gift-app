@@ -51,7 +51,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
 
     const message = getLog({request, exception});
-    this.botService.sendMessage({message})
+    this.botService.sendLogs({message})
       .then(() => {
         console.log('Message sent');
       })

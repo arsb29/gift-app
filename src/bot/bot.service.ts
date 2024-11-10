@@ -81,7 +81,15 @@ export class BotService implements OnModuleInit {
     }
   }
 
-  async sendMessage({message}: {message: string}) {
+  async sendMessage({message, chatId}: {message: string, chatId: string}) {
+    try {
+     return this.bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
+    } catch (e) {
+      this.sendLogs({message: e.message});
+    }
+  }
+
+  async sendLogs({message}: {message: string}) {
     const chatId = this.configService.get('TELEGRAM_ERROR_LOGS_CHANNEL_ID');
     return this.bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
   }
