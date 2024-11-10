@@ -82,7 +82,7 @@ export class TransactionService {
   async changeTransactionStatusToPaid({transactionId}) {
     const transaction = await this.getPopulatedTransactionById({id: transactionId});
     if (!transaction) return null;
-    if (TRANSACTION_STATUS.invoiceCreated !== transaction.status) throw new HttpException('Invalid transaction status', 404);
+    if (TRANSACTION_STATUS.invoiceCreated !== transaction.status) return null;
     const gift = await this.giftService.addPurchasedGift({gift: transaction.gift});
     const time = Date.now();
     await transaction.updateOne({'$set': {
