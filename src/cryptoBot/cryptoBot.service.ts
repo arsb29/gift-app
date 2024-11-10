@@ -1,7 +1,11 @@
 import {Injectable} from "@nestjs/common";
 import {ConfigService} from "@nestjs/config";
 import {toMilliseconds} from "../utils/time";
+import {set} from "mongoose";
+import {CRYPTO_PAY_INVOICE_STATUS} from "../constants";
 const CryptoBotAPI = require('crypto-bot-api');
+
+const invoices = new Map();
 
 @Injectable()
 export class CryptoBotService {
@@ -28,5 +32,17 @@ export class CryptoBotService {
   async getInvoices({invoiceIds}) {
     if (invoiceIds.length === 0) return [];
     return this.cryptoBot.getInvoices({ids: invoiceIds});
+  }
+
+  clientUpdate({invoiceId}) {
+    if (invoices.has(invoiceId)) invoices.get(invoiceId).write(CRYPTO_PAY_INVOICE_STATUS.paid);
+  }
+
+  clientOn({invoiceId, clientRes}) {
+    invoices.set(invoiceId, clientRes);
+  }
+
+  clientOff({invoiceId}) {
+    invoices.delete(invoiceId);
   }
 }

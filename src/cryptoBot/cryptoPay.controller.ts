@@ -1,4 +1,4 @@
-import {Body, Controller, Post, Headers, HttpException} from "@nestjs/common";
+import {Body, Controller, Post, Headers, HttpException, Header, Res, Req, Get, Query} from "@nestjs/common";
 import {CryptoBotService} from "./cryptoBot.service";
 import {checkSignature} from "../utils/checkSignature";
 import {ConfigService} from "@nestjs/config";
@@ -12,7 +12,6 @@ export class CryptoPayController {
     private readonly configService: ConfigService,
   ) {}
 
-
   @Post('update')
   async webhookUpdate(
     @Body() body: any,
@@ -21,13 +20,26 @@ export class CryptoPayController {
     const cryptoBotToken = this.configService.get('TELEGRAM_CRYPTO_BOT_TOKEN');
     try {
       checkSignature(cryptoBotToken, {body, signature});
-      console.log('Received webhook:', body);
-      // return this.cryptoBotService.webhookUpdate({
-      //   page: body.page,
-      //   limit: body.limit
-      // });
+      const invoiceId = body?.payload?.invoice_id;
+      return this.cryptoBotService.clientUpdate({invoiceId});
     } catch (error) {
       throw new HttpException('Invalid webhook', 404);
     }
+  }
+
+  @Header('Content-Type', 'text/event-stream')
+  @Header('Cache-Control', 'no-cache')
+  @Header('Connection', 'keep-alive')
+  @Get('check')
+  async invoiceCheck(
+    @Res() res: Response,
+    @Query('invoiceId') invoiceId: string,
+    @Req() req: Request
+  ) {
+
+    // @ts-ignore
+    req.on('close', () => this.cryptoBotService.clientOff({invoiceId}))
+
+    this.cryptoBotService.clientOn({clientRes: res, invoiceId});
   }
 }
