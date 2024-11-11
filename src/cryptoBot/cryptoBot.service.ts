@@ -36,10 +36,12 @@ export class CryptoBotService {
     return this.cryptoBot.getInvoices({ids: invoiceIds});
   }
 
-  clientUpdate({invoiceId}) {
-    this.transactionService.updateTransactionsFromCryptoBot([invoiceId]);
+  async clientUpdate({invoiceId}) {
     const id = String(invoiceId);
-    if (invoices.has(id)) invoices.get(id).write(`data: ${CRYPTO_PAY_INVOICE_STATUS.paid}\n\n`);
+    if (invoices.has(id)) {
+      await this.transactionService.updateTransactionsFromCryptoBot([invoiceId]);
+      invoices.get(id).write(`data: ${CRYPTO_PAY_INVOICE_STATUS.paid}\n\n`);
+    }
   }
 
   clientOn({invoiceId, clientRes}) {
