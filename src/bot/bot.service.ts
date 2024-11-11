@@ -1,13 +1,15 @@
 import {forwardRef, Inject, Injectable, OnModuleInit} from "@nestjs/common";
-const TelegramBot = require('node-telegram-bot-api');
-const fetch = require('node-fetch');
 import {ConfigService} from "@nestjs/config";
-import * as fs from "node:fs";
 import {TransactionService} from "../transaction/transaction.service";
 import {mapUserFromInlineQuery} from "../utils/mapUserFromInlineQuery";
 import {mapTransactionsToAnswerInlineQuery} from "../utils/mapTransactionsToAnswerInlineQuery";
 import {UserService} from "../user/user.service";
 import {ImageService} from "../image/image.service";
+import {Transaction} from "../transaction/transaction.schema";
+import {formatName} from "../utils/formatName";
+import {User} from "../user/user.schema";
+import {toBase64} from "../utils/toBase64";
+const TelegramBot = require('node-telegram-bot-api');
 
 @Injectable()
 export class BotService implements OnModuleInit {
@@ -73,7 +75,7 @@ export class BotService implements OnModuleInit {
     try {
       const photoId = await this.bot.getUserProfilePhotos(telegramId, {limit: 1}).then(res => res.photos[0][0].file_id)
       const fileLink = await this.bot.getFileLink(photoId)
-      const photoBase64 = await toDataURL_node(fileLink);
+      const photoBase64 = await toBase64(fileLink);
       const image = await this.imageService.saveImage({photoBase64});
       return image['_id'];
     } catch (error) {
@@ -81,9 +83,50 @@ export class BotService implements OnModuleInit {
     }
   }
 
-  async sendMessage({message, chatId}: {message: string, chatId: string}) {
+  async notificationOfPurchaseOfGift({transaction}: {transaction: Transaction}) {
+    const params = new URLSearchParams();
+    params.set('startapp', 'giftsPurchased');
+    const url = `${this.configService.get('TELEGRAM_MINI_APP_URL')}?${params.toString()}`
+    return this.sendMessage({
+      chatId: transaction.sender.telegramId,
+      message: `✅ You have purchsed the gift of <b>${transaction.gift.title.en}</b>`,
+      options: {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: 'Open Gifts',
+                url,
+              },
+            ],
+          ],
+        },
+      }
+    })
+  }
+
+  async notificationThatThePurchasedGiftHasBeenReceived({transaction, receiver}: {transaction: Transaction, receiver: User}) {
+    return this.sendMessage({
+      chatId: transaction.sender.telegramId,
+      message: `👌 <b>${formatName(receiver)}</b> received your gift of <b>${transaction.gift.title.en}</b>`,
+      options: {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: 'Open App',
+                url: this.configService.get('TELEGRAM_MINI_APP_URL'),
+              },
+            ],
+          ],
+        },
+      }
+    })
+  }
+
+  async sendMessage({message, chatId, options = {}}: {message: string, chatId: string, options?: Record<string, any>}) {
     try {
-     return this.bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
+     return this.bot.sendMessage(chatId, message, { parse_mode: 'HTML', ...options });
     } catch (e) {
       this.sendLogs({message: e.message});
     }
@@ -92,25 +135,7 @@ export class BotService implements OnModuleInit {
   async sendLogs({message}: {message: string}) {
     const chatId = this.configService.get('TELEGRAM_ERROR_LOGS_CHANNEL_ID');
     // Выключил отправку логов в телеграм из-за большого числа запросов
-    // Too Many Requests: retry after 3
     // return this.bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
   }
-
-  idFile() {
-    this.bot.on('message', (msg) => {
-      const chatId = msg.chat.id;
-      if (msg.photo) {
-        const photos = msg.photo;
-        const fileId = photos[photos.length - 1].file_id;
-        this.bot.sendMessage(chatId, `File ID: ${fileId}`);
-      }
-    });
-  }
 }
 
-async function toDataURL_node(url: string) {
-  let response = await fetch(url);
-  let contentType = response.headers.get("Content-Type");
-  let buffer = await response.buffer();
-  return "data:" + contentType + ';base64,' + buffer.toString('base64');
-}

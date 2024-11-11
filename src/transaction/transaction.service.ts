@@ -100,7 +100,7 @@ export class TransactionService {
         serialNumberOfGift: gift.numberOfPurchased,
         updateTime: time
       }});
-    await this.botService.sendMessage({chatId: transaction.sender.telegramId, message: `✅ You have purchsed the gift of <b>${transaction.gift.title.en}</b>`})
+    await this.botService.notificationOfPurchaseOfGift({transaction});
     await this.actionsService.recordActions({gift: transaction.gift, sender: transaction.sender, transaction, type: ACTION_TYPE.buy, receiver: null, time})
   }
 
@@ -135,7 +135,7 @@ export class TransactionService {
     await this.userService.addReceivedGift({user: receiver});
     this.userService.updateUsersOrder();
     await this.actionsService.recordActions({gift: transaction.gift?.['_id'], receiver, transaction: transaction['_id'], type: ACTION_TYPE.receive, sender: transactionSender, time});
-    await this.botService.sendMessage({chatId: transaction.sender.telegramId, message: `👌 <b>${formatName(receiver)}</b> received your gift of <b>${transaction.gift.title.en}</b>`})
+    await this.botService.notificationThatThePurchasedGiftHasBeenReceived({receiver, transaction});
     await this.actionsService.updateReceiverOnAction({receiver, transaction});
     return this.getPopulatedTransactionById({id: transaction['_id']});
   }
