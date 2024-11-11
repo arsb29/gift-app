@@ -8,6 +8,7 @@ import {AuthGuard} from "./guards/auth";
 import {HttpExceptionFilter} from "./filters/everything.filter";
 import {BotService} from "./bot/bot.service";
 import { Reflector } from '@nestjs/core';
+import {AllExceptionsFilter} from "./filters/all.filter";
 
 
 async function bootstrap() {
@@ -36,6 +37,7 @@ async function bootstrap() {
   });
   app.useGlobalGuards(new AuthGuard(configService, reflector));
   app.useGlobalFilters(new HttpExceptionFilter(configService, botService));
+  app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(3000);
 }

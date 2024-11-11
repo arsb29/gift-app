@@ -82,7 +82,7 @@ export class TransactionService {
     const foundInvoicesIdsToUpdate = invoiceIds || (await this.transactionModel.find({status: TRANSACTION_STATUS.invoiceCreated})).map(transaction => transaction.invoiceId);
     const invoices = await this.cryptoBotService.getInvoices({invoiceIds: foundInvoicesIdsToUpdate});
     const transactionIdsNeedToUpdate = invoices.filter(invoice => invoice.status === CRYPTO_PAY_INVOICE_STATUS.paid).map(invoice => invoice.payload);
-    return Promise.all(transactionIdsNeedToUpdate.map(async (id: any) => await this.changeTransactionStatusToPaid({transactionId: id})))
+    await Promise.allSettled(transactionIdsNeedToUpdate.map(async (id: any) => await this.changeTransactionStatusToPaid({transactionId: id})))
   }
 
   async changeTransactionStatusToPaid({transactionId}) {

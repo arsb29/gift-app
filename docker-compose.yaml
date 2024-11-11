@@ -16,6 +16,7 @@ services:
 
   api-prod:
     image: arsb29/gift-app:latest
+    restart: always
     volumes:
       - .:/usr/src/app
       - ./assets:/usr/src/app/assets
