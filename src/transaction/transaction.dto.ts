@@ -11,13 +11,13 @@ export class TransactionBuyDto {
 export class TransactionCheckDto {
   @IsNotEmpty()
   @IsMongoId()
-  transactionId: string;
+  transactionId: Types.ObjectId;
 }
 
 export class TransactionReceiveDto {
   @IsNotEmpty()
   @IsMongoId()
-  transactionId: string;
+  transactionId: Types.ObjectId;
 }
 
 export class TransactionNeedToSendDto {

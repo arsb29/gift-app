@@ -31,24 +31,29 @@ export class CryptoBotService {
     });
   }
 
-  async getInvoices({invoiceIds}) {
+  async getInvoices({invoiceIds}: {invoiceIds: number[]}) {
     if (invoiceIds.length === 0) return [];
-    return this.cryptoBot.getInvoices({ids: invoiceIds});
-  }
-
-  async clientUpdate({invoiceId}) {
-    const id = String(invoiceId);
-    if (invoices.has(id)) {
-      await this.transactionService.updateTransactionsFromCryptoBot([invoiceId]);
-      invoices.get(id).write(`data: ${CRYPTO_PAY_INVOICE_STATUS.paid}\n\n`);
+    try {
+      return this.cryptoBot.getInvoices({ids: invoiceIds});
+    } catch (e) {
+      console.error(e);
+      return [];
     }
   }
 
-  clientOn({invoiceId, clientRes}) {
+  async clientUpdate({invoiceId}: {invoiceId: number}) {
+    const stringInvoiceId = String(invoiceId);
+    await this.transactionService.updateTransactionsFromCryptoBot([invoiceId]);
+    if (invoices.has(stringInvoiceId)) {
+      invoices.get(stringInvoiceId).write(`data: ${CRYPTO_PAY_INVOICE_STATUS.paid}\n\n`);
+    }
+  }
+
+  clientOn({invoiceId, clientRes}: {invoiceId: string, clientRes: any}) {
     invoices.set(invoiceId, clientRes);
   }
 
-  clientOff({invoiceId}) {
+  clientOff({invoiceId}: {invoiceId: string}) {
     invoices.delete(invoiceId);
   }
 }

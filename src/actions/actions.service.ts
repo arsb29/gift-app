@@ -3,6 +3,8 @@ import {Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {Actions} from "./actions.schema";
 import {ACTION_TYPE} from "../constants";
+import {Transaction} from "../transaction/transaction.schema";
+import {User} from "../user/user.schema";
 
 @Injectable()
 export class ActionsService {
@@ -21,11 +23,11 @@ export class ActionsService {
     });
   }
 
-  async updateReceiverOnAction({transaction, receiver}: any) {
+  async updateReceiverOnAction({transaction, receiver}: {transaction: Transaction, receiver: User}) {
     return this.actionsModel.findOneAndUpdate({transaction, type: ACTION_TYPE.send}, {$set: {receiver}});
   }
 
-  async getGiftActions({gift, limit, page}) {
+  async getGiftActions({gift, limit, page}: {gift: string, limit: number, page: number}) {
     const skip = (page - 1) * limit;
     const items = await this.actionsModel.find({
       gift: gift,
@@ -42,7 +44,7 @@ export class ActionsService {
     };
   }
 
-  async getUserActions({user, limit, page}) {
+  async getUserActions({user, limit, page}: {user: string, limit: number, page: number}) {
     const skip = (page - 1) * limit;
     const items = await this.actionsModel.find({$or : [
       {sender: user, type: ACTION_TYPE.buy},

@@ -21,8 +21,7 @@ export class CryptoPayController {
     const cryptoBotToken = this.configService.get('TELEGRAM_CRYPTO_BOT_TOKEN');
     try {
       checkSignature(cryptoBotToken, {body, signature});
-      const invoiceId = body?.payload?.invoice_id;
-      return this.cryptoBotService.clientUpdate({invoiceId});
+      return this.cryptoBotService.clientUpdate({invoiceId: body?.payload?.invoice_id});
     } catch (error) {
       throw new HttpException('Invalid webhook', 404);
     }
