@@ -143,7 +143,7 @@ export class TransactionService {
   async deleteExpiredTransactions() {
     const now = Date.now();
     return await this.transactionModel.deleteMany({
-      $or: [{status: TRANSACTION_STATUS.transactionCreated}, {status: TRANSACTION_STATUS.transactionCreated}],
+      $or: [{status: TRANSACTION_STATUS.transactionCreated}, {status: TRANSACTION_STATUS.invoiceCreated}],
       expiresIn: {$lt: now}
     }).exec();
   }
